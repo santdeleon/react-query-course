@@ -5,6 +5,7 @@ import Fuse from "fuse.js";
 import IssuesList from "../components/IssuesList";
 import LabelList from "../components/LabelList";
 import IssueSearchBar from "../components/IssueSearchBar";
+import StatusSelect from "../components/StatusSelect";
 
 // =============================================================================
 // Constants
@@ -18,7 +19,8 @@ const API_URI = "/api/issues";
 
 const useHomeProps = () => {
   const [query, setQuery] = useState("");
-  const [labelFilter, setLabelFilter] = useState("");
+  // { type: "label" | "status", value?: string }
+  const [filterConfig, setFilterConfig] = useState(undefined);
 
   // fetch issues
   const issuesQuery = useQuery(
@@ -46,16 +48,37 @@ const useHomeProps = () => {
     ],
   });
   const result = query ? fuse.search(query).map((issue) => issue.item) : issues;
-  const filteredResult = labelFilter
-    ? result.filter((i) => i.labels.includes(labelFilter))
+  const filteredResult = filterConfig
+    ? result.filter((item) => {
+        switch (filterConfig.type) {
+          case "label":
+            return item.labels?.includes(filterConfig.value);
+          case "status":
+            const val = filterConfig.value === "";
+            return item.status?.includes(filterConfig.value);
+        }
+      })
     : result;
+
+  console.log(filterConfig);
 
   const handleSearch = useCallback(
     (e) => {
-      if (labelFilter) setLabelFilter("");
+      if (filterConfig) setFilterConfig(undefined);
       setQuery(e.currentTarget.value);
     },
-    [labelFilter, setLabelFilter, setQuery]
+    [filterConfig, setFilterConfig, setQuery]
+  );
+
+  const handleStatusSelection = useCallback(
+    (e) => {
+      const { id, value } = e.currentTarget;
+      const val = value.toLowerCase();
+      // we could handle split statues better but meh
+      const formattedVal = val === "in progress" ? "inProgress" : val;
+      setFilterConfig({ type: id, value: formattedVal });
+    },
+    [setFilterConfig]
   );
 
   return {
@@ -63,8 +86,9 @@ const useHomeProps = () => {
     error,
     data: filteredResult,
     query,
-    setLabelFilter,
+    setFilterConfig,
     handleSearch,
+    handleStatusSelection,
   };
 };
 
@@ -86,7 +110,9 @@ const StatelessHome = (props) => (
         </div>
       </section>
       <aside>
-        <LabelList setLabelFilter={props.setLabelFilter} />
+        <LabelList setFilterConfig={props.setFilterConfig} />
+        <StatusSelect handleStatusSelection={props.handleStatusSelection} />
+        <hr />
       </aside>
     </main>
   </div>
