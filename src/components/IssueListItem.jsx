@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { defaultLabels } from "../helpers/defaultData";
 import { relativeDate } from "../helpers/relativeDate";
 
 const IssueListItem = React.memo(
@@ -7,7 +8,6 @@ const IssueListItem = React.memo(
     id,
     title,
     number,
-    status,
     assignee,
     comments,
     createdBy,
@@ -40,19 +40,24 @@ const IssueListItem = React.memo(
         <div className="issue-content">
           <span>
             <Link to={`/issue/${number}`}>{title}</Link>
-            {labels.map(({ id, name, color }) => (
-              <span key={id} className={`label ${color}`}>
-                {name}
-              </span>
-            ))}
+            {labels?.map((label) => {
+              const currentLabel = defaultLabels.find((l) => l.name === label);
+              return (
+                <span key={id} className={`label ${currentLabel?.color}`}>
+                  {label}
+                </span>
+              );
+            })}
           </span>
           <small>{smallText}</small>
         </div>
-        <img
-          className="assigned-to"
-          src={`https://res.cloudinary.com/uidotdev/image/twitter_name/${assignee}`}
-          alt="Avatar of the assignee to this issue"
-        />
+        {assignee && (
+          <img
+            className="assigned-to"
+            src={`https://res.cloudinary.com/uidotdev/image/twitter_name/${assignee}`}
+            alt="Avatar of the assignee to this issue"
+          />
+        )}
         <span className="comment-count">
           <svg
             stroke="currentColor"

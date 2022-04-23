@@ -1,3 +1,5 @@
+import React from "react";
+
 import IssuesList from "../components/IssuesList";
 import LabelList from "../components/LabelList";
 import IssueSearchBar from "../components/IssueSearchBar";
@@ -11,7 +13,7 @@ const Home = () => {
         <section>
           <div>
             <IssueSearchBar />
-            <IssuesList issues={[defaultIssue]} />
+            <IssuesList />
           </div>
         </section>
         <aside>

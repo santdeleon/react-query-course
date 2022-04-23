@@ -21,7 +21,7 @@ export const defaultLabels = [
   },
   {
     id: "5",
-    name: "helped wanted",
+    name: "help",
     color: "lime",
   },
   {
