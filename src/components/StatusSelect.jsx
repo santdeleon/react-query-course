@@ -5,7 +5,7 @@ import { possibleStatuses } from "../helpers/defaultData";
 // Status Select
 // =============================================================================
 
-const StatusSelect = ({ filterConfig, handleStatusSelection }) => (
+const StatusSelect = React.memo(({ filterConfig, handleStatusSelection }) => (
   <>
     <h3>Status</h3>
     <select
@@ -23,6 +23,6 @@ const StatusSelect = ({ filterConfig, handleStatusSelection }) => (
       ))}
     </select>
   </>
-);
+));
 
 export default StatusSelect;

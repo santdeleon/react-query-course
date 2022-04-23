@@ -19,7 +19,10 @@ const API_URI = "/api/issues";
 
 const useHomeProps = () => {
   const [query, setQuery] = useState("");
-  // { type: "label" | "status", value?: string }
+  /**
+   * { type: "label" | "status", value?: string }
+   * @dev: if we wanted to we could easily filter by multiple filters. too lazy atm tho
+   */
   const [filterConfig, setFilterConfig] = useState(undefined);
 
   // fetch issues
