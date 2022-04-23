@@ -1,5 +1,5 @@
 import { Route, Routes, Link, useMatch } from "react-router-dom";
-import Issues from "./pages/Issues";
+import Home from "./pages/Home";
 import Issue from "./pages/Issue";
 import AddIssue from "./pages/AddIssue";
 
@@ -14,7 +14,7 @@ function App() {
       )}
       <h1>Issue Tracker</h1>
       <Routes>
-        <Route path="/" element={<Issues />} />
+        <Route path="/" element={<Home />} />
         <Route path="/add" element={<AddIssue />} />
         <Route path="/issue/:number" element={<Issue />} />
       </Routes>
