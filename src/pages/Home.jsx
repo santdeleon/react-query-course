@@ -12,6 +12,7 @@ const API_URI = "/api/issues";
 
 const Home = () => {
   const [query, setQuery] = useState("");
+  const [labelFilter, setLabelFilter] = useState("");
 
   // fetch issues
   const fetchIssues = async () => await (await fetch(API_URI)).json();
@@ -37,8 +38,14 @@ const Home = () => {
     ],
   });
   const result = query ? fuse.search(query).map((issue) => issue.item) : issues;
+  const filteredResult = labelFilter
+    ? result.filter((i) => i.labels.includes(labelFilter))
+    : result;
 
-  const handleSearch = (e) => setQuery(e.currentTarget.value);
+  const handleSearch = (e) => {
+    if (labelFilter) setLabelFilter("");
+    setQuery(e.currentTarget.value);
+  };
 
   return (
     <div>
@@ -46,11 +53,11 @@ const Home = () => {
         <section>
           <div>
             <IssueSearchBar search={query} onSearch={handleSearch} />
-            <IssuesList data={result} loading={loading} error={error} />
+            <IssuesList data={filteredResult} loading={loading} error={error} />
           </div>
         </section>
         <aside>
-          <LabelList labels={defaultLabels} />
+          <LabelList setLabelFilter={setLabelFilter} />
         </aside>
       </main>
     </div>
