@@ -14,6 +14,26 @@ export const defaultLabels = [
     name: "enhancement",
     color: "cyan",
   },
+  {
+    id: "4",
+    name: "question",
+    color: "orange",
+  },
+  {
+    id: "5",
+    name: "helped wanted",
+    color: "lime",
+  },
+  {
+    id: "6",
+    name: "wontfix",
+    color: "white",
+  },
+  {
+    id: "7",
+    name: "duplicate",
+    color: "rebeccapurple",
+  },
 ];
 
 export const defaultUsers = [

@@ -1,9 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import "./index.css";
-import App from "./App";
 import { BrowserRouter } from "react-router-dom";
 import { worker } from "@uidotdev/react-query-api";
+
+import App from "./App";
+
+import "./index.css";
 
 new Promise((res) => setTimeout(res, 100))
   .then(() =>
