@@ -1,23 +1,17 @@
-import React, { useState } from "react";
+import React from "react";
 
-const IssueSearchBar = () => {
-  const [query, setQuery] = useState();
-
-  const handleChange = (e) => setQuery(e.currentTarget.value);
-
-  return (
-    <form>
-      <label htmlFor="search">Search Issues</label>
-      <input
-        type="search"
-        id="search"
-        name="search"
-        value={query}
-        placeholder="Search"
-        onChange={handleChange}
-      />
-    </form>
-  );
-};
+const IssueSearchBar = React.memo(({ search, onSearch }) => (
+  <form>
+    <label htmlFor="search">Search Issues</label>
+    <input
+      type="search"
+      id="search"
+      name="search"
+      value={search}
+      placeholder="Search"
+      onChange={onSearch}
+    />
+  </form>
+));
 
 export default IssueSearchBar;
