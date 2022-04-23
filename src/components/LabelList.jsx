@@ -1,6 +1,10 @@
 import React from "react";
 import { defaultLabels } from "../helpers/defaultData";
 
+// =============================================================================
+// Label List
+// =============================================================================
+
 const LabelList = React.memo(({ setLabelFilter }) => (
   <div className="labels">
     <h2>Labels</h2>

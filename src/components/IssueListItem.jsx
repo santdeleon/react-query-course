@@ -3,6 +3,10 @@ import { Link } from "react-router-dom";
 import { defaultLabels } from "../helpers/defaultData";
 import { relativeDate } from "../helpers/relativeDate";
 
+// =============================================================================
+// Issue List Item
+// =============================================================================
+
 const IssueListItem = React.memo(
   ({
     id,

@@ -1,5 +1,9 @@
 import React from "react";
 
+// =============================================================================
+// Issue Search Bar
+// =============================================================================
+
 const IssueSearchBar = React.memo(({ search, onSearch }) => (
   <form>
     <label htmlFor="search">Search Issues</label>

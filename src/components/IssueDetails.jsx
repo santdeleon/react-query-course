@@ -1,5 +1,9 @@
 import { useParams } from "react-router-dom";
 
+// =============================================================================
+// Issue Details
+// =============================================================================
+
 export default function IssueDetails() {
   const { number } = useParams();
 
