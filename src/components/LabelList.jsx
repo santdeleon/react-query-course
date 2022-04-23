@@ -1,23 +1,26 @@
 import React from "react";
-import {defaultLabels} from "../helpers/defaultData"
 
 
-const LabelList = () => {
-return (
-  <div className="labels">
-    <h3>Labels</h3>
-    <ul>
-    {defaultLabels.map(({id, name, color}) => (
-      <li>
-        <button className={color}>
-        {name}
-        </button>
-      </li>
-    ))}
-    </ul>
-  </div>
-)
-}
+const LabelList = React.memo(({labels}) => {
+  return (
+    <div className="labels">
+      <h2>Labels</h2>
+      <ul>
+        {labels.map(({id, name, color}) => {
+          return (
+            (
+              <li key={id}>
+                <button className={color}>
+                 {name}
+                </button>
+              </li>
+            )
+          )
+        })}
+      </ul>
+    </div>
+  )
+});
 
 
-export default LabelList
+export default LabelList;

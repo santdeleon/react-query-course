@@ -1,17 +1,23 @@
 import IssuesList from "../components/IssuesList";
 import LabelList from "../components/LabelList";
-export default function Issues() {
+
+import { defaultIssue, defaultLabels } from "../helpers/defaultData";
+
+
+const Issues = () => {
   return (
     <div>
       <main>
         <section>
           <h1>Issues</h1>
-          <IssuesList />
+          <IssuesList issues={[defaultIssue]}/>
         </section>
         <aside>
-          <LabelList />
+          <LabelList labels={defaultLabels}/>
         </aside>
       </main>
     </div>
   );
 }
+
+export default Issues;
