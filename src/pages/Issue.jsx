@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "react-query";
 
@@ -12,8 +12,7 @@ import { relativeDate } from "../helpers/relativeDate";
 // =============================================================================
 
 const capitalizeFirstLetter = (str) => {
-  if (!str) return;
-  return str.charAt(0).toUpperCase() + str.slice(1);
+  return `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
 };
 
 // =============================================================================
@@ -23,45 +22,37 @@ const capitalizeFirstLetter = (str) => {
 const useIssueProps = () => {
   const { number } = useParams();
 
-  // fetch issues
-  const issuesQuery = useQuery(
-    ["issues"],
-    async () => await (await fetch("/api/issues")).json()
+  // fetch issue
+  const fetchIssue = useCallback(
+    async () => await (await fetch(`/api/issues/${number}`)).json(),
+    [number]
   );
-  const issues = issuesQuery.data ?? [];
+  const issuesQuery = useQuery(["issues", number], fetchIssue);
+  const issue = issuesQuery.data;
 
   // fetch comments
-  const commentsQuery = useQuery(
-    ["comments", number],
-    async () => await (await fetch(`/api/issues/${number}/comments`)).json()
+  const fetchComments = useCallback(
+    async () => await (await fetch(`/api/issues/${number}/comments`)).json(),
+    [number]
   );
+  const commentsQuery = useQuery(["comments", number], fetchComments);
   const comments = commentsQuery.data ?? [];
 
-  const currentIssue = issues.find((issue) => issue.number === +number);
-  const formattedStatus = currentIssue
-    ? capitalizeFirstLetter(currentIssue.status)
-    : undefined;
-  const formattedDate = currentIssue
-    ? relativeDate(currentIssue.createdDate)
-    : undefined;
-  const statusLabel = currentIssue
-    ? `opened this issue ${formattedDate} · ${comments.length} comments`
-    : undefined;
+  // format props
+  const status = issue ? capitalizeFirstLetter(issue.status) : undefined;
+  const createdDate = issue ? relativeDate(issue.createdDate) : undefined;
+  const statusLabel = `opened this issue ${createdDate} · ${comments.length} comments`;
 
-  const error = issuesQuery.error || issuesQuery.error;
-  const loading =
-    issuesQuery.isLoading ||
-    issuesQuery.isFetching ||
-    commentsQuery.isLoading ||
-    commentsQuery.isFetching;
+  const error = issuesQuery.error || commentsQuery.error;
+  const loading = !issuesQuery.isFetched || !commentsQuery.isFetched;
 
   return {
     data: {
       number,
-      title: currentIssue?.title,
-      status: formattedStatus,
-      createdBy: currentIssue?.createdBy,
-      createdDate: formattedDate,
+      title: issue?.title,
+      status,
+      createdBy: issue?.createdBy,
+      createdDate,
       statusLabel,
       comments,
     },
@@ -71,7 +62,7 @@ const useIssueProps = () => {
 };
 
 // =============================================================================
-// Issue
+// Stateless Issue
 // =============================================================================
 
 const StatelessIssue = React.memo((props) => {
@@ -98,22 +89,42 @@ const StatelessIssue = React.memo((props) => {
             />
           ))}
         </section>
+        <aside>
+          <div className="issue-options">
+            <div>
+              <span>Status</span>
+            </div>
+          </div>
+          <div className="issue-options">
+            <div>
+              <span>Assignment</span>
+            </div>
+          </div>
+          <div className="issue-options">
+            <div>
+              <span>Labels</span>
+            </div>
+          </div>
+        </aside>
       </main>
     </>
   );
 });
 
+// =============================================================================
+// Issue
+// =============================================================================
+
 const Issue = () => {
   const props = useIssueProps();
 
-  if (props.loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (props.error) {
-    return <div>Error...</div>;
-  }
-  return <StatelessIssue {...props.data} />;
+  return props.loading ? (
+    <div>Loading...</div>
+  ) : props.error ? (
+    <div>{props.error}</div>
+  ) : (
+    <StatelessIssue {...props.data} />
+  );
 };
 
 export default Issue;

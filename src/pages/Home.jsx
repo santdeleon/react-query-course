@@ -24,9 +24,7 @@ const useHomeProps = () => {
     ["issues"],
     async () => await (await fetch("/api/issues")).json()
   );
-  const { isLoading, isFetching, error } = issuesQuery;
   const issues = issuesQuery.data ?? [];
-  const loading = isLoading || isFetching;
 
   const fuse = new Fuse(issues, {
     keys: [
@@ -57,8 +55,6 @@ const useHomeProps = () => {
       })
     : result;
 
-  console.log(filterConfig);
-
   const handleSearch = useCallback(
     (e) => {
       if (filterConfig) setFilterConfig(undefined);
@@ -79,8 +75,8 @@ const useHomeProps = () => {
   );
 
   return {
-    loading,
-    error,
+    loading: !issuesQuery.isFetched,
+    error: issuesQuery.error,
     data: filteredResult,
     query,
     setFilterConfig,
