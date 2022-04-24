@@ -8,12 +8,6 @@ import IssueSearchBar from "../components/IssueSearchBar";
 import StatusSelect from "../components/StatusSelect";
 
 // =============================================================================
-// Constants
-// =============================================================================
-
-const API_URI = "/api/issues";
-
-// =============================================================================
 // Hooks
 // =============================================================================
 
@@ -28,7 +22,7 @@ const useHomeProps = () => {
   // fetch issues
   const issuesQuery = useQuery(
     ["issues"],
-    async () => await (await fetch(API_URI)).json()
+    async () => await (await fetch("/api/issues")).json()
   );
   const { isLoading, isFetching, error } = issuesQuery;
   const issues = issuesQuery.data ?? [];
