@@ -7,8 +7,6 @@ import QueryProvider from "./contexts/query";
 
 import App from "./App";
 
-import "./index.css";
-
 new Promise((res) => setTimeout(res, 100))
   .then(() =>
     worker.start({
@@ -21,9 +19,7 @@ new Promise((res) => setTimeout(res, 100))
       <React.StrictMode>
         <QueryProvider>
           <BrowserRouter>
-            <div className="container">
-              <App />
-            </div>
+            <App />
           </BrowserRouter>
         </QueryProvider>
       </React.StrictMode>,

@@ -2,6 +2,7 @@ import React, { useState, useCallback } from "react";
 import { useQuery } from "react-query";
 import Fuse from "fuse.js";
 
+import Header from "../components/Header";
 import IssuesList from "../components/IssuesList";
 import LabelList from "../components/LabelList";
 import IssueSearchBar from "../components/IssueSearchBar";
@@ -90,8 +91,9 @@ const useHomeProps = () => {
 // =============================================================================
 
 const StatelessHome = (props) => (
-  <div>
-    <main>
+  <>
+    <Header />
+    {/* <main>
       <section>
         <div>
           <IssueSearchBar search={props.query} onSearch={props.handleSearch} />
@@ -107,8 +109,8 @@ const StatelessHome = (props) => (
         <StatusSelect handleStatusSelection={props.handleStatusSelection} />
         <hr />
       </aside>
-    </main>
-  </div>
+    </main> */}
+  </>
 );
 
 // =============================================================================
