@@ -1,19 +1,13 @@
-import React, { useCallback, useMemo } from "react";
-import { useParams } from "react-router-dom";
-import { useQuery } from "react-query";
+import React, { useCallback } from 'react';
+import { useParams } from 'react-router-dom';
+import { useQuery } from 'react-query';
 
-import IssueDetails from "../components/IssueDetails";
-import IssueComment from "../components/IssueComment";
+import IssueDetails from '../components/IssueDetails';
+import IssueComment from '../components/IssueComment';
 
-import { relativeDate } from "../helpers/relativeDate";
+import { relativeDate, capitalizeFirstLetter } from '../utils';
 
-// =============================================================================
-// Utils
-// =============================================================================
-
-const capitalizeFirstLetter = (str) => {
-  return `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
-};
+import { TIssue, TComment } from '../types';
 
 // =============================================================================
 // Hooks
@@ -24,18 +18,18 @@ const useIssueProps = () => {
 
   // fetch issue
   const fetchIssue = useCallback(
-    async () => await (await fetch(`/api/issues/${number}`)).json(),
-    [number]
+    async (): Promise<TIssue> => await (await fetch(`/api/issues/${number}`)).json(),
+    [number],
   );
-  const issuesQuery = useQuery(["issues", number], fetchIssue);
+  const issuesQuery = useQuery(['issues', number], fetchIssue);
   const issue = issuesQuery.data;
 
   // fetch comments
   const fetchComments = useCallback(
-    async () => await (await fetch(`/api/issues/${number}/comments`)).json(),
-    [number]
+    async (): Promise<TComment[]> => await (await fetch(`/api/issues/${number}/comments`)).json(),
+    [number],
   );
-  const commentsQuery = useQuery(["comments", number], fetchComments);
+  const commentsQuery = useQuery(['comments', number], fetchComments);
   const comments = commentsQuery.data ?? [];
 
   // format props
@@ -62,23 +56,31 @@ const useIssueProps = () => {
 };
 
 // =============================================================================
+// Typedefs
+// =============================================================================
+
+interface IssueProps {
+  number: number;
+  title?: string;
+  status?: string;
+  createdBy?: string;
+  createdDate?: string;
+  statusLabel: string;
+  comments: TComment[];
+}
+
+// =============================================================================
 // Stateless Issue
 // =============================================================================
 
-const StatelessIssue = React.memo((props) => {
+const StatelessIssue = React.memo((props: IssueProps) => {
   const { number, title, status, createdBy, statusLabel, comments } = props;
 
   return (
     <>
-      <IssueDetails
-        number={number}
-        title={title}
-        status={status}
-        createdBy={createdBy}
-        statusLabel={statusLabel}
-      />
+      <IssueDetails number={number} title={title} status={status} createdBy={createdBy} statusLabel={statusLabel} />
       <main>
-        <section>
+        {/* <section>
           {comments.map(({ id, createdBy, createdDate, comment }) => (
             <IssueComment
               key={id}
@@ -88,8 +90,8 @@ const StatelessIssue = React.memo((props) => {
               comment={comment}
             />
           ))}
-        </section>
-        <aside>
+        </section> */}
+        {/* <aside>
           <div className="issue-options">
             <div>
               <span>Status</span>
@@ -105,7 +107,7 @@ const StatelessIssue = React.memo((props) => {
               <span>Labels</span>
             </div>
           </div>
-        </aside>
+        </aside> */}
       </main>
     </>
   );
@@ -116,7 +118,7 @@ const StatelessIssue = React.memo((props) => {
 // =============================================================================
 
 const Issue = () => {
-  const props = useIssueProps();
+  const props: any = useIssueProps();
 
   return props.loading ? (
     <div>Loading...</div>

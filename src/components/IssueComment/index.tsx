@@ -1,10 +1,21 @@
-import React from "react";
+import React from 'react';
+
+// =============================================================================
+// Typedefs
+// =============================================================================
+
+interface IssueCommentProps {
+  avatar: string;
+  createdBy: string;
+  createdDate: string;
+  comment: string;
+}
 
 // =============================================================================
 // Issue Comment
 // =============================================================================
 
-const IssueComment = React.memo((props) => (
+const IssueComment = React.memo((props: IssueCommentProps) => (
   <div className="comment">
     <img src={props.avatar} alt="Commenter avatar" />
     <div>

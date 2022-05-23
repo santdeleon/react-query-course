@@ -1,10 +1,22 @@
-import React from "react";
+import React from 'react';
 
 // =============================================================================
-// Stateless Issue Details
+// Typedefs
 // =============================================================================
 
-const IssueDetails = React.memo((props) => (
+interface IssueDetailsProps {
+  title: string;
+  number: number;
+  status?: string;
+  createdBy: string;
+  statusLabel: string;
+}
+
+// =============================================================================
+// Issue Details
+// =============================================================================
+
+const IssueDetails = React.memo((props: IssueDetailsProps) => (
   <div className="issue-details">
     <header>
       <h2>

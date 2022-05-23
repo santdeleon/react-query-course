@@ -1,22 +1,35 @@
 import React from 'react';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import styled from 'styled-components';
 
-// =============================================================================
-// Constants
-// =============================================================================
-
-const client = new QueryClient();
+import SpinnerSVG from './SpinnerSVG';
 
 // =============================================================================
 // Typedefs
 // =============================================================================
 
+export interface SpinnerProps {
+  margin?: string;
+}
+
 // =============================================================================
-// Main Component
+// Styled Components
 // =============================================================================
 
-const QueryProvider: React.FC<React.HTMLProps<HTMLDivElement>> = ({ children }) => (
-  <QueryClientProvider client={client}>{children}</QueryClientProvider>
-);
+const StyledSpinner = styled.div<SpinnerProps>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: ${({ margin }) => margin};
+`;
 
-export default QueryProvider;
+// =============================================================================
+// Spinner
+// =============================================================================
+
+const Spinner = React.memo((props: SpinnerProps) => (
+  <StyledSpinner margin={props.margin}>
+    <SpinnerSVG />
+  </StyledSpinner>
+));
+
+export default Spinner;
