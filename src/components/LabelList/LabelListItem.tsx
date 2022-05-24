@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { TLabel } from '../../types';
+
 import Badge from '../../components/Badge';
 
 // =============================================================================
@@ -7,7 +9,7 @@ import Badge from '../../components/Badge';
 // =============================================================================
 
 interface LabelListItemProps {
-  color: string;
+  label: TLabel;
   isActive: boolean;
   children: React.ReactNode;
   onClick: () => void;
@@ -19,7 +21,7 @@ interface LabelListItemProps {
 
 const LabelListItem = React.memo((props: LabelListItemProps) => (
   <li>
-    <Badge color={props.color} isActive={props.isActive} onClick={props.onClick}>
+    <Badge label={props.label} isActive={props.isActive} onClick={props.onClick}>
       {props.children}
     </Badge>
   </li>

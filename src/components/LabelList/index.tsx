@@ -47,7 +47,7 @@ const StatelessLabelList = React.memo((props: LabelListData) => {
       {props.labels.map((label) => (
         <LabelListItem
           key={label.id}
-          color={label.color}
+          label={label.id}
           isActive={props.labelFilters.has(label.id)}
           onClick={() => props.toggleLabelFilter(label.id)}
         >

@@ -6,12 +6,13 @@ import { TLabel, TStatus } from '../../types';
 
 import { hexToRGB } from '../../utils';
 
-import { BLUE, GREEN, ORANGE, PINK, PURPLE, RED, YELLOW, GRAY } from '../../constants';
+import { BLUE, GREEN, ORANGE, PINK, PURPLE, RED, YELLOW } from '../../constants';
 
 import CommentIcon from '../../assets/icons/CommentIcon';
 
 import Row from '../Row';
 import Column from '../Column';
+import Badge from '../Badge';
 
 // =============================================================================
 // Styled Components
@@ -34,7 +35,7 @@ const StatusBar = styled.div<{ status: TStatus }>`
   background-color: ${({ status }) => {
     switch (status) {
       case 'backlog':
-        return hexToRGB(GRAY, 0.5);
+        return hexToRGB('#d2d2d2', 0.5);
       case 'todo':
         return hexToRGB(BLUE, 0.5);
       case 'inProgress':
@@ -45,7 +46,7 @@ const StatusBar = styled.div<{ status: TStatus }>`
         return hexToRGB(RED, 0.5);
       // handle undefined case
       default:
-        return hexToRGB(GRAY, 0.5);
+        return hexToRGB('#d2d2d2', 0.5);
     }
   }};
 `;
@@ -106,49 +107,6 @@ const Comments = styled(Row).attrs({ align: 'center' })`
   }
 `;
 
-const Badge = styled.span<{ label: TLabel }>`
-  color: ${(props) => {
-    switch (props.label) {
-      case 'bug':
-        return RED;
-      case 'feature':
-        return ORANGE;
-      case 'question':
-        return YELLOW;
-      case 'enhancement':
-        return GREEN;
-      case 'help':
-        return BLUE;
-      case 'wontfix':
-        return PURPLE;
-      case 'duplicate':
-        return PINK;
-    }
-  }};
-  background-color: ${(props) => {
-    switch (props.label) {
-      case 'bug':
-        return hexToRGB(RED, 0.1);
-      case 'feature':
-        return hexToRGB(ORANGE, 0.1);
-      case 'question':
-        return hexToRGB(YELLOW, 0.1);
-      case 'enhancement':
-        return hexToRGB(GREEN, 0.1);
-      case 'help':
-        return hexToRGB(BLUE, 0.1);
-      case 'wontfix':
-        return hexToRGB(PURPLE, 0.1);
-      case 'duplicate':
-        return hexToRGB(PINK, 0.1);
-    }
-  }};
-  font-size: 13px;
-  font-weight: 500;
-  padding: 2px 6px;
-  border-radius: 6px;
-`;
-
 // =============================================================================
 // Typedefs
 // =============================================================================
@@ -198,7 +156,7 @@ const IssueListItem = React.memo((props: IssueListItemProps) => {
           {/* Labels */}
           <Row align="center">
             {labels.map((label) => (
-              <Badge key={label} label={label}>
+              <Badge key={label} label={label} isActive>
                 {label}
               </Badge>
             ))}
