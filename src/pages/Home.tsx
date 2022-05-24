@@ -1,11 +1,10 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
-import Fuse from 'fuse.js';
 
 import { TLabel, TStatus, IIssue, ILabel, IUser } from '../types';
 
-import { useIssues, useLabels, useMultipleUsers } from '../hooks';
+import { useIssues, useIssuesByQuery, useLabels, useMultipleUsers } from '../hooks';
 
 import IssueList from '../components/IssueList';
 import Row from '../components/Row';
@@ -166,10 +165,6 @@ interface HomeProps {
 // =============================================================================
 
 const useHomeProps = () => {
-  // check for a search query
-  const [searchParams] = useSearchParams();
-  const searchQuery = searchParams.get('search');
-
   // setup filters
   const [labelFilters, setLabelFilters] = useState<LabelFilters>(new Set());
   const [status, setStatus] = useState<StatusFilter>('default');
@@ -179,28 +174,26 @@ const useHomeProps = () => {
   const labels = labelsQuery.data ?? [];
 
   // fetch issues
-  const issuesQuery = useIssues({ labels: [...labelFilters], status });
+  // sort to prevent redundant calls to the same data based on label position in api call
+  const issuesQuery = useIssues({ labels: [...labelFilters].sort(), status });
   const issues = issuesQuery.data ?? [];
-  const fuse = new Fuse(issues, {
-    keys: [
-      {
-        name: 'title',
-        weight: 0.5,
-      },
-      {
-        name: 'labels',
-        weight: 0.3,
-      },
-      {
-        name: 'status',
-        weight: 0.2,
-      },
-    ],
-  });
-  const result = searchQuery ? fuse.search(searchQuery).map((issue) => issue.item) : issues;
+
+  // check for a search query
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchQuery = searchParams.get('search');
+
+  // fetch issues by query
+  const searchedIssuesQuery = useIssuesByQuery(searchQuery);
+  const issuesByQuery = searchedIssuesQuery.data;
+
+  const result = searchQuery ? issuesByQuery?.items ?? [] : issues;
+  const resultUsers =
+    searchQuery && issuesByQuery
+      ? [...new Set(issuesByQuery.items.flatMap((item) => [item.assignee, item.createdBy]))]
+      : [...new Set(issues.flatMap((r) => [r.assignee, r.createdBy]))];
 
   // fetch and format user data
-  const usersQuery = useMultipleUsers([...new Set(result.flatMap((r) => [r.assignee, r.createdBy]))]);
+  const usersQuery = useMultipleUsers(resultUsers);
   const users = usersQuery.data ?? [];
   const userIDToUser = useMemo(() => new Map(users.map((user) => [user.id, user])), [users]);
 
@@ -208,6 +201,7 @@ const useHomeProps = () => {
     (label: TLabel) => {
       labelFilters.has(label) ? labelFilters.delete(label) : labelFilters.add(label);
       setLabelFilters(new Set(labelFilters));
+      if (searchParams) setSearchParams({});
     },
     [labelFilters, setLabelFilters],
   );

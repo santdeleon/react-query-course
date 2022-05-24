@@ -51,6 +51,35 @@ const useIssues = (opts?: FetchIssuesOpts) => {
 export default useIssues;
 
 // =============================================================================
+// useIssuesByQuery
+// =============================================================================
+
+const QUERY_KEY_ISSUES_QUERY = 'issues-by-query';
+
+interface IssuesByQueryResponse {
+  count: number;
+  items: IIssue[];
+}
+
+const fetchIssuesByQuery = async (query: string) => {
+  const res = await fetch(`/api/search/issues?q=${query}`);
+  const data: IssuesByQueryResponse = await res.json();
+  return data;
+};
+
+export const useIssuesByQuery = (query: string | null) => {
+  return useQuery({
+    queryKey: [QUERY_KEY_ISSUES_QUERY, { query }],
+    async queryFn() {
+      if (!query) return;
+      const issuesByQuery = await fetchIssuesByQuery(query);
+      return issuesByQuery;
+    },
+    enabled: !!query,
+  });
+};
+
+// =============================================================================
 // useIssueAndComments
 // =============================================================================
 
