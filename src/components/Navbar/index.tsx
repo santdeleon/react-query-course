@@ -13,7 +13,7 @@ const StyledNavbar = styled.div`
   flex-direction: row;
   align-items: center;
   padding: 15px 0;
-  border-bottom: 1px solid #e8e8e8;
+  border-bottom: 2px solid #e8e8e8;
 `;
 
 const NavbarBrand = styled(Link).attrs({
@@ -25,7 +25,7 @@ const NavbarBrand = styled(Link).attrs({
   color: #000;
   font-family: Whitney;
   margin-right: 20px;
-  &:focus {
+  &:focus-visible {
     outline-width: 3px;
     outline-style: solid;
     outline-color: #f9d4f6;

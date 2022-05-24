@@ -7,8 +7,6 @@ import styled from 'styled-components';
 const Container = styled.div`
   position: relative;
   margin: 0 auto;
-  padding: 0 4rem;
-  height: 100vh;
   font-family: Whitney;
   max-width: 65vw;
   ul {

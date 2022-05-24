@@ -24,6 +24,7 @@ interface SkeletonLoaderProps extends React.HTMLProps<HTMLDivElement> {
   height?: string;
   margin?: string;
   borderRadius?: string;
+  backgroundColor?: string;
 }
 
 // =============================================================================
@@ -37,10 +38,7 @@ const SkeletonLoader = styled.div<SkeletonLoaderProps>`
   height: ${({ height }) => height};
   margin: ${({ margin }) => margin};
   border-radius: ${({ borderRadius }) => borderRadius};
-  border-width: 2px;
-  border-style: solid;
-  border-color: transparent;
-  background-color: #f7f4f4;
+  background-color: ${({ backgroundColor }) => backgroundColor ?? '#f7f4f4'};
   &:before {
     content: '';
     display: block;

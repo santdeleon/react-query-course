@@ -64,7 +64,7 @@ const StatelessLabelList = React.memo((props: LabelListData) => {
 
 const LabelList = React.memo((props: LabelListProps) => {
   return props.loading ? (
-    <SkeletonLoader width="200px" height="12px" borderRadius="6px" />
+    <SkeletonLoader width="200px" height="14px" borderRadius="6px" />
   ) : props.error ? (
     <h3>Failed to fetch labels</h3>
   ) : (

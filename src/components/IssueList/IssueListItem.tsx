@@ -2,11 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { IIssue, TLabel } from '../../types';
+import { TLabel } from '../../types';
 
-import { hexToRGB, relativeDate } from '../../utils';
-
-import { useMultipleUsers } from '../../hooks';
+import { hexToRGB } from '../../utils';
 
 import { BLUE, GREEN, ORANGE, PINK, PURPLE, RED, YELLOW } from '../../constants';
 
@@ -18,13 +16,13 @@ import Row from '../Row';
 // Styled Components
 // =============================================================================
 
-const Card = styled.div`
+const StyledIssueListItem = styled.div`
+  padding: 15px;
   border-width: 2px 2px 4px;
   border-style: solid;
   border-color: #e5e0e0;
   border-radius: 6px;
-  padding: 15px;
-  margin-bottom: 20px;
+  background-color: #fff;
 `;
 
 const AssigneeAvatar = styled.img`
@@ -127,34 +125,45 @@ const Badge = styled.span<{ label: TLabel }>`
 `;
 
 // =============================================================================
+// Typedefs
+// =============================================================================
+
+interface IssueListItemProps {
+  title: string;
+  number: number;
+  labels: TLabel[];
+  commentsLength: number;
+  createdDate: string;
+  assigneeName?: string;
+  assigneeAvatar?: string;
+  createdByName?: string;
+}
+
+// =============================================================================
 // Main Component
 // =============================================================================
 
-const IssueListItem = React.memo((props: IIssue) => {
-  const { title, number, assignee, comments, createdBy, createdDate, labels } = props;
-
-  // fetch user data
-  const usersQuery = useMultipleUsers([assignee, createdBy]);
-  const users = usersQuery.data;
-  const assigneeUser = users ? users[0] : undefined;
-  const createdByUser = users ? users[1] : undefined;
+const IssueListItem = React.memo((props: IssueListItemProps) => {
+  const { title, number, labels, commentsLength, createdDate, assigneeName, assigneeAvatar, createdByName } = props;
 
   return (
     <li>
-      <Card>
+      <StyledIssueListItem>
         {/* Title and Avatar */}
         <Row justify="space-between">
           <Title to={`/issue/${number}`}>{title}</Title>
-          {assigneeUser && <AssigneeAvatar src={assigneeUser.profilePictureUrl} alt={assigneeUser.name} />}
+          {assigneeAvatar && (
+            <AssigneeAvatar src={assigneeAvatar} alt={`${assigneeName}'s avatar` || 'Issue assignee'} />
+          )}
         </Row>
         {/* Timestamp and comment count */}
         <SubtitleRow>
           <Subtitle>
-            #{number} opened {relativeDate(createdDate)} {createdByUser && `by ${createdByUser?.name}`}
+            #{number} opened {createdDate} {createdByName && `by ${createdByName}`}
           </Subtitle>
           <Comments>
             <CommentIcon />
-            {comments.length}
+            {commentsLength}
           </Comments>
         </SubtitleRow>
         {/* Labels */}
@@ -165,7 +174,7 @@ const IssueListItem = React.memo((props: IIssue) => {
             </Badge>
           ))}
         </Row>
-      </Card>
+      </StyledIssueListItem>
     </li>
   );
 });

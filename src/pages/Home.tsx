@@ -3,9 +3,9 @@ import { Link, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import Fuse from 'fuse.js';
 
-import { TLabel, TStatus, IIssue, ILabel, IStatus } from '../types';
+import { TLabel, TStatus, IIssue, ILabel, IUser } from '../types';
 
-import { useIssues, useLabels } from '../hooks';
+import { useIssues, useLabels, useMultipleUsers } from '../hooks';
 
 import IssueList from '../components/IssueList';
 import Row from '../components/Row';
@@ -17,28 +17,15 @@ import StatusSelect from '../components/StatusSelect';
 // Styled Components
 // =============================================================================
 
-const Island = styled.div`
-  position: relative;
-  margin: 0 auto;
-  padding: 20px;
-  border-radius: 16px;
-  border-width: 2px 2px 4px;
-  border-style: solid;
-  border-color: #e8e8e8;
-  max-width: 600px;
-`;
-
-const IslandHeader = styled(Row).attrs({
-  align: 'flex-start',
-  margin: '0 0 20px 0',
-  padding: '0 0 20px 0',
+const Header = styled(Column).attrs({
+  padding: '20px',
 })`
   border-bottom: 2px solid #e8e8e8;
 `;
 
-const IslandBody = styled(Column).attrs({
-  align: 'center',
-})``;
+const Title = styled.h2`
+  margin: 0 15px 0 0;
+`;
 
 const CreateIssueButton = styled(Link).attrs({
   to: '/add',
@@ -89,8 +76,64 @@ const CreateIssueButton = styled(Link).attrs({
   }
 `;
 
-const Title = styled.h2`
-  margin: 0 15px 0 0;
+const Body = styled(Column).attrs({
+  align: 'center',
+})<{ isLoading: boolean }>`
+  padding: 20px;
+  background-color: ghostwhite;
+  border-radius: ${({ isLoading }) => isLoading && '0 0 10px 10px'};
+`;
+
+const Footer = styled(Row).attrs({
+  width: '100%',
+  align: 'center',
+  justify: 'center',
+  padding: '20px 0',
+})`
+  border-top: 2px solid #e8e8e8;
+  border-radius: 0 0 14px 14px;
+  background-color: #fff;
+`;
+
+const PaginationButton = styled.button<{ margin?: string }>`
+  position: relative;
+  cursor: pointer;
+  display: block;
+  color: #fff;
+  margin: ${(props) => props.margin};
+  padding: 5px 10px;
+  font-weight: 600;
+  background-color: #ef70e2;
+  border-color: #bc49b1;
+  box-shadow: 0 2px 0 0 #bc49b1;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  border-width: 2px;
+  border-style: solid;
+  border-radius: 6px;
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  overflow: visible;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  transform: translateY(0);
+  &:hover {
+    background-color: #d660c8;
+    border-color: #bc47af;
+    box-shadow: #bc47af;
+  }
+  &:focus-visible:not(:active) {
+    outline-width: 3px;
+    outline-style: solid;
+    outline-color: #f9d4f6;
+  }
+  &:active {
+    box-shadow: 0 0 0 0 #bc47af;
+    transform: translateY(0.14rem);
+  }
 `;
 
 // =============================================================================
@@ -101,12 +144,15 @@ type LabelFilters = Set<TLabel>;
 
 type StatusFilter = TStatus | 'default';
 
+type UserIDToUser = Map<string, IUser>;
+
 interface HomeProps {
   data: {
-    issues: IIssue[];
     labels: ILabel[];
     labelFilters: LabelFilters;
     status: StatusFilter;
+    issues: IIssue[];
+    userIDToUser: UserIDToUser;
     toggleLabelFilter: (label: TLabel) => void;
     handleStatusSelect: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   };
@@ -153,6 +199,11 @@ const useHomeProps = () => {
   });
   const result = searchQuery ? fuse.search(searchQuery).map((issue) => issue.item) : issues;
 
+  // fetch user data
+  const usersQuery = useMultipleUsers([...new Set(result.flatMap((r) => [r.assignee, r.createdBy]))]);
+  const users = usersQuery.data;
+  const userIDToUser = useMemo(() => new Map(users?.map((user) => [user.id, user])), [users]);
+
   const toggleLabelFilter = useCallback(
     (label: TLabel) => {
       labelFilters.has(label) ? labelFilters.delete(label) : labelFilters.add(label);
@@ -168,14 +219,15 @@ const useHomeProps = () => {
 
   return {
     data: {
-      issues: result,
       labels,
       labelFilters,
       status,
+      issues: result,
+      userIDToUser,
       toggleLabelFilter,
       handleStatusSelect,
     },
-    loading: labelsQuery.isLoading || issuesQuery.isLoading,
+    loading: labelsQuery.isLoading || issuesQuery.isLoading || usersQuery.isLoading,
     labelsError: labelsQuery.error,
     issuesError: issuesQuery.error,
   };
@@ -186,29 +238,41 @@ const useHomeProps = () => {
 // =============================================================================
 
 const StatelessHome = React.memo((props: HomeProps) => (
-  <Island>
+  <>
     <CreateIssueButton>+</CreateIssueButton>
-    <IslandHeader>
-      <Column>
-        <Row align="center" margin="0 0 10px 0">
-          <Title>Issues</Title>
-          <StatusSelect status={props.data.status} handleChange={props.data.handleStatusSelect} />
-        </Row>
-        <LabelList
-          data={{
-            labels: props.data.labels,
-            labelFilters: props.data.labelFilters,
-            toggleLabelFilter: props.data.toggleLabelFilter,
-          }}
-          loading={props.loading}
-          error={props.labelsError}
-        />
-      </Column>
-    </IslandHeader>
-    <IslandBody>
-      <IssueList data={props.data.issues} loading={props.loading} error={props.issuesError} />
-    </IslandBody>
-  </Island>
+    <Header>
+      <Row align="center" margin="0 0 10px 0">
+        <Title>Issues</Title>
+        <StatusSelect status={props.data.status} handleChange={props.data.handleStatusSelect} />
+      </Row>
+      <LabelList
+        data={{
+          labels: props.data.labels,
+          labelFilters: props.data.labelFilters,
+          toggleLabelFilter: props.data.toggleLabelFilter,
+        }}
+        loading={props.loading}
+        error={props.labelsError}
+      />
+    </Header>
+    <Body isLoading={props.loading}>
+      <IssueList
+        data={{
+          issues: props.data.issues,
+          userIDToUser: props.data.userIDToUser,
+        }}
+        loading={props.loading}
+        error={props.issuesError}
+      />
+    </Body>
+    {!props.loading && (
+      <Footer>
+        <PaginationButton margin="0 25px 0 0">Previous</PaginationButton>
+        <span>Page 1</span>
+        <PaginationButton margin="0 0 0 25px">Next</PaginationButton>
+      </Footer>
+    )}
+  </>
 ));
 
 // =============================================================================
