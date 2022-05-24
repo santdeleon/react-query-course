@@ -6,7 +6,7 @@ import { TLabel, TStatus } from '../../types';
 
 import { hexToRGB } from '../../utils';
 
-import { BLUE, GREEN, ORANGE, PINK, PURPLE, RED, YELLOW } from '../../constants';
+import { BLUE, GREEN, PINK, RED, YELLOW, GRAY } from '../../constants';
 
 import CommentIcon from '../../assets/icons/CommentIcon';
 
@@ -35,7 +35,7 @@ const StatusBar = styled.div<{ status: TStatus }>`
   background-color: ${({ status }) => {
     switch (status) {
       case 'backlog':
-        return hexToRGB('#d2d2d2', 0.5);
+        return hexToRGB(GRAY, 0.5);
       case 'todo':
         return hexToRGB(BLUE, 0.5);
       case 'inProgress':
@@ -46,7 +46,7 @@ const StatusBar = styled.div<{ status: TStatus }>`
         return hexToRGB(RED, 0.5);
       // handle undefined case
       default:
-        return hexToRGB('#d2d2d2', 0.5);
+        return hexToRGB(GRAY, 0.5);
     }
   }};
 `;

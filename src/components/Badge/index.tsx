@@ -74,7 +74,7 @@ const Badge = styled.button<BadgeProps>`
   }};
   opacity: ${(props) => (props.isActive ? 1 : 0.5)};
   &:hover {
-    opacity: 1;
+    opacity: ${(props) => (props.onClick ? 1 : undefined)};
   }
   &:focus-visible {
     opacity: 1;

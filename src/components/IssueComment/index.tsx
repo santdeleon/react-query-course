@@ -1,12 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { IUser } from '../../types';
-
-import { useUser } from '../../hooks';
-
 import Row from '../Row';
-
 import Column from '../Column';
 
 // =============================================================================
@@ -40,6 +35,7 @@ const IssueCommentCardHeader = styled(Row).attrs({
   padding: 8px;
   background-color: ghostwhite;
   border-bottom: 1px solid #e8e8e8;
+  border-radius: 4px 4px 0 0;
 `;
 
 const Name = styled.span`
@@ -57,47 +53,25 @@ const IssueCommentCardBody = styled(Row)`
 // =============================================================================
 
 interface IssueCommentProps {
+  avatar?: string;
   createdBy: string;
   createdDate: string;
   comment: string;
 }
 
-interface StatelessIssueCommentProps extends IssueCommentProps {
-  user?: IUser;
-  loading: boolean;
-  error: unknown;
-}
-
 // =============================================================================
-// Hooks
+// Main Component
 // =============================================================================
 
-const useIssueCommentProps = (createdBy: string) => {
-  // fetch user
-  const userQuery = useUser(createdBy);
-  const user = userQuery.data;
-
-  return {
-    user,
-    loading: userQuery.isLoading,
-    error: userQuery,
-  };
-};
-
-// =============================================================================
-// Stateless Issue Comment
-// =============================================================================
-
-const StatelessIssueComment = React.memo((props: StatelessIssueCommentProps) => {
-  const { createdBy, createdDate, comment, user, loading, error } = props;
-  const name = user?.name || createdBy;
+const IssueComment = React.memo((props: IssueCommentProps) => {
+  const { avatar, createdBy, createdDate, comment } = props;
 
   return (
     <StyledIssueComment>
-      <Avatar src={user?.profilePictureUrl} alt={name} />
+      {avatar && <Avatar src={avatar} alt={createdBy} />}
       <IssueCommentCard>
         <IssueCommentCardHeader>
-          <Name>{name}</Name> commented {createdDate}
+          <Name>{createdBy}</Name> commented {createdDate}
         </IssueCommentCardHeader>
         <IssueCommentCardBody>{comment}</IssueCommentCardBody>
       </IssueCommentCard>
@@ -105,12 +79,4 @@ const StatelessIssueComment = React.memo((props: StatelessIssueCommentProps) => 
   );
 });
 
-// =============================================================================
-// Main Component
-// =============================================================================
-
-const IssueComment = React.memo((props: IssueCommentProps) => {
-  const propsFromHook = useIssueCommentProps(props.createdBy);
-  return <StatelessIssueComment {...propsFromHook} {...props} />;
-});
 export default IssueComment;

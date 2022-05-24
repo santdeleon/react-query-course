@@ -199,10 +199,10 @@ const useHomeProps = () => {
   });
   const result = searchQuery ? fuse.search(searchQuery).map((issue) => issue.item) : issues;
 
-  // fetch user data
+  // fetch and format user data
   const usersQuery = useMultipleUsers([...new Set(result.flatMap((r) => [r.assignee, r.createdBy]))]);
-  const users = usersQuery.data;
-  const userIDToUser = useMemo(() => new Map(users?.map((user) => [user.id, user])), [users]);
+  const users = usersQuery.data ?? [];
+  const userIDToUser = useMemo(() => new Map(users.map((user) => [user.id, user])), [users]);
 
   const toggleLabelFilter = useCallback(
     (label: TLabel) => {
