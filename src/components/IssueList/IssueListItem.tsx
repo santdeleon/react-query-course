@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -6,7 +6,11 @@ import { IIssue, TLabel } from '../../types';
 
 import { hexToRGB, relativeDate } from '../../utils';
 
-import { BLUE, GREEN, ORANGE, PINK, PURPLE, RED, YELLOW, DEFAULT_LABELS } from '../../constants';
+import { useMultipleUsers } from '../../hooks';
+
+import { BLUE, GREEN, ORANGE, PINK, PURPLE, RED, YELLOW } from '../../constants';
+
+import CommentIcon from '../../assets/icons/CommentIcon';
 
 import Row from '../Row';
 
@@ -23,10 +27,10 @@ const Card = styled.div`
   margin-bottom: 20px;
 `;
 
-const Avatar = styled.img`
+const AssigneeAvatar = styled.img`
   border-radius: 50%;
-  width: 16px;
-  height: 16px;
+  width: 22px;
+  height: 22px;
   margin-right: 5px;
 `;
 
@@ -127,54 +131,40 @@ const Badge = styled.span<{ label: TLabel }>`
 // =============================================================================
 
 const IssueListItem = React.memo((props: IIssue) => {
-  const { id, title, number, assignee, comments, createdBy, createdDate, labels } = props;
-  // using this to avoid broken images
-  const [avatar, setAvatar] = useState<string | undefined>(assignee);
-  const timestamp = `#${number} opened ${relativeDate(createdDate)} by ${createdBy}`;
+  const { title, number, assignee, comments, createdBy, createdDate, labels } = props;
+
+  // fetch user data
+  const usersQuery = useMultipleUsers([assignee, createdBy]);
+  const users = usersQuery.data;
+  const assigneeUser = users ? users[0] : undefined;
+  const createdByUser = users ? users[1] : undefined;
 
   return (
-    <li key={id}>
+    <li>
       <Card>
-        <Row>
+        {/* Title and Avatar */}
+        <Row justify="space-between">
           <Title to={`/issue/${number}`}>{title}</Title>
+          {assigneeUser && <AssigneeAvatar src={assigneeUser.profilePictureUrl} alt={assigneeUser.name} />}
         </Row>
+        {/* Timestamp and comment count */}
         <SubtitleRow>
-          <Row align="center">
-            {avatar && (
-              <Avatar
-                src={`https://res.cloudinary.com/uidotdev/image/twitter_name/${assignee}`}
-                onError={() => setAvatar(undefined)}
-              />
-            )}
-            <Subtitle>{timestamp}</Subtitle>
-          </Row>
+          <Subtitle>
+            #{number} opened {relativeDate(createdDate)} {createdByUser && `by ${createdByUser?.name}`}
+          </Subtitle>
           <Comments>
-            <svg
-              stroke="currentColor"
-              fill="currentColor"
-              strokeWidth="0"
-              viewBox="0 0 16 16"
-              height="1em"
-              width="1em"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                fillRule="evenodd"
-                d="M14 1H2c-.55 0-1 .45-1 1v8c0 .55.45 1 1 1h2v3.5L7.5 11H14c.55 0 1-.45 1-1V2c0-.55-.45-1-1-1zm0 9H7l-2 2v-2H2V2h12v8z"
-              />
-            </svg>
+            <CommentIcon />
             {comments.length}
           </Comments>
         </SubtitleRow>
-        {labels && (
-          <Row align="center">
-            {labels.map((label) => (
-              <Badge key={label} label={label}>
-                {label}
-              </Badge>
-            ))}
-          </Row>
-        )}
+        {/* Labels */}
+        <Row align="center">
+          {labels.map((label) => (
+            <Badge key={label} label={label}>
+              {label}
+            </Badge>
+          ))}
+        </Row>
       </Card>
     </li>
   );

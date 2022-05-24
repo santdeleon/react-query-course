@@ -1,9 +1,9 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { TLabel } from '../../types';
+import { TLabel, ILabel } from '../../types';
 
-import { DEFAULT_LABELS } from '../../constants';
+import SkeletonLoader from '../../components/SkeletonLoader';
 
 import LabelListItem from './LabelListItem';
 
@@ -25,28 +25,51 @@ const UnorderedList = styled.ul`
 // Typedefs
 // =============================================================================
 
-interface LabelListProps {
+interface LabelListData {
+  labels: ILabel[];
   labelFilters: Set<TLabel>;
   toggleLabelFilter: (label: TLabel) => void;
 }
+
+interface LabelListProps {
+  data: LabelListData;
+  loading: boolean;
+  error: unknown;
+}
+
+// =============================================================================
+// Stateless Label List
+// =============================================================================
+
+const StatelessLabelList = React.memo((props: LabelListData) => {
+  return (
+    <UnorderedList>
+      {props.labels.map((label) => (
+        <LabelListItem
+          key={label.id}
+          color={label.color}
+          isActive={props.labelFilters.has(label.id)}
+          onClick={() => props.toggleLabelFilter(label.id)}
+        >
+          {label.name}
+        </LabelListItem>
+      ))}
+    </UnorderedList>
+  );
+});
 
 // =============================================================================
 // Main Component
 // =============================================================================
 
-const LabelList = React.memo((props: LabelListProps) => (
-  <UnorderedList>
-    {DEFAULT_LABELS.map((label) => (
-      <LabelListItem
-        key={label.id}
-        color={label.color}
-        isActive={props.labelFilters.has(label.name)}
-        onClick={() => props.toggleLabelFilter(label.name)}
-      >
-        {label.name}
-      </LabelListItem>
-    ))}
-  </UnorderedList>
-));
+const LabelList = React.memo((props: LabelListProps) => {
+  return props.loading ? (
+    <SkeletonLoader width="200px" height="12px" borderRadius="6px" />
+  ) : props.error ? (
+    <h3>Failed to fetch labels</h3>
+  ) : (
+    <StatelessLabelList {...props.data} />
+  );
+});
 
 export default LabelList;

@@ -1,8 +1,8 @@
 export type TLabel = 'bug' | 'feature' | 'enhancement' | 'question' | 'help' | 'wontfix' | 'duplicate';
 
 export interface ILabel {
-  id: string;
-  name: TLabel;
+  id: TLabel;
+  name: string;
   color: string;
 }
 
@@ -33,4 +33,10 @@ export interface IComment {
   createdDate: Date;
   id: string;
   issue_id: string;
+}
+
+export interface IUser {
+  id: string;
+  name: string;
+  profilePictureUrl: string;
 }

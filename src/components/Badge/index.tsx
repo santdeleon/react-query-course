@@ -16,7 +16,7 @@ const Badge = styled.button<BadgeProps>`
   font-size: 12px;
   font-weight: 600;
   color: ${(props) => (props.isActive ? props.color : '#000')};
-  background-color: ${(props) => (props.isActive ? hexToRGB(props.color, 0.1) : hexToRGB('gray', 0.5))}};
+  // background-color: ${(props) => (props.isActive ? hexToRGB(props.color, 0.1) : hexToRGB('gray', 0.5))}};
   opacity: ${(props) => (props.isActive ? 1 : 0.5)};
   &:hover {
     opacity: 1;

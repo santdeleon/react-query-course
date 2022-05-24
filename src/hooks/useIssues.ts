@@ -1,19 +1,45 @@
 import { useQuery } from 'react-query';
-import { IIssue } from '../types';
+import { TLabel, TStatus, IIssue } from '../types';
 
-const fetchIssues = async () => {
-  const res = await fetch('/api/issues');
+const BASE_ISSUES_URL = '/api/issues?';
+
+interface FetchIssuesOpts {
+  labels?: TLabel[];
+  status?: TStatus | 'default';
+}
+
+const fetchIssues = async (opts?: FetchIssuesOpts) => {
+  const labels = opts?.labels;
+  const hasLabels = labels && labels.length > 0;
+  const status = opts?.status;
+  let url = BASE_ISSUES_URL;
+
+  // apply label filters
+  if (hasLabels) {
+    const labelString = labels.map((l) => `labels[]=${l}`).join('&');
+    url += `${labelString}`;
+  }
+
+  // apply status filter
+  if (status && status !== 'default') {
+    const statusString = `${hasLabels ? '&' : ''}status=${status}`;
+    url += statusString;
+  }
+
+  // console.log(url);
+
+  const res = await fetch(url);
   const data: IIssue[] = await res.json();
   return data;
 };
 
-const ISSUES_QUERY_KEY = 'issues';
+const QUERY_KEY_ISSUES = 'issues';
 
-const useIssues = () => {
+const useIssues = (opts?: FetchIssuesOpts) => {
   return useQuery({
-    queryKey: [ISSUES_QUERY_KEY],
+    queryKey: [QUERY_KEY_ISSUES, { opts }],
     async queryFn() {
-      const issues = await fetchIssues();
+      const issues = await fetchIssues(opts);
       return issues;
     },
   });

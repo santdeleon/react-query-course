@@ -3,9 +3,9 @@ import { Link, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import Fuse from 'fuse.js';
 
-import { TLabel, TStatus, IIssue } from '../types';
+import { TLabel, TStatus, IIssue, ILabel, IStatus } from '../types';
 
-import { useIssues } from '../hooks';
+import { useIssues, useLabels } from '../hooks';
 
 import IssueList from '../components/IssueList';
 import Row from '../components/Row';
@@ -89,47 +89,6 @@ const CreateIssueButton = styled(Link).attrs({
   }
 `;
 
-const PaginationButton = styled.button<{ margin?: string }>`
-  position: relative;
-  cursor: pointer;
-  display: block;
-  color: #fff;
-  margin: ${(props) => props.margin};
-  padding: 5px 10px;
-  font-weight: 600;
-  background-color: #ef70e2;
-  border-color: #bc49b1;
-  box-shadow: 0 2px 0 0 #bc49b1;
-  text-align: center;
-  text-decoration: none;
-  vertical-align: middle;
-  border-width: 2px;
-  border-style: solid;
-  border-radius: 6px;
-  -webkit-border-radius: 6px;
-  -moz-border-radius: 6px;
-  overflow: visible;
-  white-space: nowrap;
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  transform: translateY(0);
-  &:hover {
-    background-color: #d660c8;
-    border-color: #bc47af;
-    box-shadow: #bc47af;
-  }
-  &:focus-visible:not(:active) {
-    outline-width: 3px;
-    outline-style: solid;
-    outline-color: #f9d4f6;
-  }
-  &:active {
-    box-shadow: 0 0 0 0 #bc47af;
-    transform: translateY(0.14rem);
-  }
-`;
-
 const Title = styled.h2`
   margin: 0 15px 0 0;
 `;
@@ -145,13 +104,16 @@ type StatusFilter = TStatus | 'default';
 interface HomeProps {
   data: {
     issues: IIssue[];
+    labels: ILabel[];
     labelFilters: LabelFilters;
     status: StatusFilter;
     toggleLabelFilter: (label: TLabel) => void;
     handleStatusSelect: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   };
-  loading: boolean;
-  error: unknown;
+  isLoadingLabels: boolean;
+  isLoadingIssues: boolean;
+  labelsError: unknown;
+  issuesError: unknown;
 }
 
 // =============================================================================
@@ -167,11 +129,13 @@ const useHomeProps = () => {
   const [labelFilters, setLabelFilters] = useState<LabelFilters>(new Set());
   const [status, setStatus] = useState<StatusFilter>('default');
 
-  // fetch issues
-  const issuesQuery = useIssues();
-  const issues = issuesQuery.data ?? [];
+  // fetch labels
+  const labelsQuery = useLabels();
+  const labels = labelsQuery.data ?? [];
 
-  // filter issues
+  // fetch issues
+  const issuesQuery = useIssues({ labels: [...labelFilters], status });
+  const issues = issuesQuery.data ?? [];
   const fuse = new Fuse(issues, {
     keys: [
       {
@@ -188,29 +152,7 @@ const useHomeProps = () => {
       },
     ],
   });
-
   const result = searchQuery ? fuse.search(searchQuery).map((issue) => issue.item) : issues;
-  const resultByStatus = useMemo(
-    () => (status !== 'default' ? result.filter((item) => item.status === status) : result),
-    [result, status],
-  );
-  const finalResult = useMemo(() => {
-    const hasNoLabelFilters = labelFilters.size === 0;
-    return hasNoLabelFilters
-      ? resultByStatus
-      : resultByStatus.filter((item) => {
-          let hasLabel = false;
-
-          for (const label of item.labels) {
-            if (labelFilters.has(label as TLabel)) {
-              hasLabel = true;
-              break;
-            }
-          }
-
-          return hasLabel;
-        });
-  }, [resultByStatus, labelFilters]);
 
   const toggleLabelFilter = useCallback(
     (label: TLabel) => {
@@ -227,14 +169,17 @@ const useHomeProps = () => {
 
   return {
     data: {
-      issues: finalResult,
+      issues: result,
+      labels,
       labelFilters,
       status,
       toggleLabelFilter,
       handleStatusSelect,
     },
-    loading: !issuesQuery.isFetched,
-    error: issuesQuery.error,
+    isLoadingLabels: labelsQuery.isLoading,
+    isLoadingIssues: issuesQuery.isLoading,
+    labelsError: labelsQuery.error,
+    issuesError: issuesQuery.error,
   };
 };
 
@@ -251,15 +196,19 @@ const StatelessHome = React.memo((props: HomeProps) => (
           <Title>Issues</Title>
           <StatusSelect status={props.data.status} handleChange={props.data.handleStatusSelect} />
         </Row>
-        <LabelList labelFilters={props.data.labelFilters} toggleLabelFilter={props.data.toggleLabelFilter} />
+        <LabelList
+          data={{
+            labels: props.data.labels,
+            labelFilters: props.data.labelFilters,
+            toggleLabelFilter: props.data.toggleLabelFilter,
+          }}
+          loading={props.isLoadingLabels}
+          error={props.labelsError}
+        />
       </Column>
     </IslandHeader>
     <IslandBody>
-      <Row width="100%" align="center" justify="center" margin="0 0 20px 0">
-        <PaginationButton margin="0 50px 0 0">Previous</PaginationButton> Page 1
-        <PaginationButton margin="0 0 0 50px">Next</PaginationButton>
-      </Row>
-      <IssueList data={props.data.issues} loading={props.loading} error={props.error} />
+      <IssueList data={props.data.issues} loading={props.isLoadingIssues} error={props.issuesError} />
     </IslandBody>
   </Island>
 ));
