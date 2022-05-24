@@ -7,7 +7,7 @@ import Searchbar from '../Searchbar';
 // Styled Components
 // =============================================================================
 
-const Navbar = styled.div`
+const StyledNavbar = styled.div`
   width: 100%;
   display: flex;
   flex-direction: row;
@@ -36,8 +36,8 @@ const NavbarBrand = styled(Link).attrs({
 // Main Component
 // =============================================================================
 
-const Header = () => (
-  <Navbar>
+const Navbar = () => (
+  <StyledNavbar>
     <nav>
       <NavbarBrand>
         <span role="img" aria-label="Sparkles Emoji">
@@ -47,7 +47,7 @@ const Header = () => (
       </NavbarBrand>
     </nav>
     <Searchbar />
-  </Navbar>
+  </StyledNavbar>
 );
 
-export default Header;
+export default Navbar;

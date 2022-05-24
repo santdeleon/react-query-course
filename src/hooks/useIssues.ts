@@ -1,7 +1,14 @@
 import { useQuery } from 'react-query';
-import { TLabel, TStatus, IIssue } from '../types';
 
-const BASE_ISSUES_URL = '/api/issues?';
+import { TLabel, TStatus, IIssue, IComment } from '../types';
+
+const BASE_ISSUES_URL = '/api/issues';
+
+// =============================================================================
+// useIssues
+// =============================================================================
+
+const QUERY_KEY_ISSUES = 'issues';
 
 interface FetchIssuesOpts {
   labels?: TLabel[];
@@ -12,7 +19,7 @@ const fetchIssues = async (opts?: FetchIssuesOpts) => {
   const labels = opts?.labels;
   const hasLabels = labels && labels.length > 0;
   const status = opts?.status;
-  let url = BASE_ISSUES_URL;
+  let url = `${BASE_ISSUES_URL}?`;
 
   // apply label filters
   if (hasLabels) {
@@ -26,14 +33,10 @@ const fetchIssues = async (opts?: FetchIssuesOpts) => {
     url += statusString;
   }
 
-  // console.log(url);
-
   const res = await fetch(url);
   const data: IIssue[] = await res.json();
   return data;
 };
-
-const QUERY_KEY_ISSUES = 'issues';
 
 const useIssues = (opts?: FetchIssuesOpts) => {
   return useQuery({
@@ -46,3 +49,38 @@ const useIssues = (opts?: FetchIssuesOpts) => {
 };
 
 export default useIssues;
+
+// =============================================================================
+// useIssueAndComments
+// =============================================================================
+
+const QUERY_KEY_ISSUE_AND_COMMENTS = 'issue-and-comments';
+
+const fetchIssue = async (issueId: string) => {
+  const res = await fetch(`${BASE_ISSUES_URL}/${issueId}`);
+  const data: IIssue = await res.json();
+  return data;
+};
+
+const fetchIssueComments = async (issueId: string) => {
+  const res = await fetch(`${BASE_ISSUES_URL}/${issueId}/comments`);
+  const data: IComment[] = await res.json();
+  return data;
+};
+
+const fetchIssueAndComments = async (issueId: string) => {
+  const issueAndComments = await Promise.all([fetchIssue(issueId), fetchIssueComments(issueId)]);
+  return issueAndComments;
+};
+
+export const useIssueAndComments = (issueId?: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEY_ISSUE_AND_COMMENTS, { issueId }],
+    async queryFn() {
+      if (!issueId) throw new Error('You must provide an issue ID');
+      const issueAndComments = await fetchIssueAndComments(issueId);
+      return issueAndComments;
+    },
+    enabled: !!issueId,
+  });
+};

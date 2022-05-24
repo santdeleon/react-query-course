@@ -12,8 +12,8 @@ import Layout from './components/Layout';
 
 const ROUTES = [
   { path: '/', element: <Home /> },
-  { path: '/add', element: <AddIssue /> },
-  // { path: '/issue/:number', element: <Issue /> },
+  // { path: '/add', element: <AddIssue /> },
+  { path: '/issue/:number', element: <Issue /> },
 ];
 
 // =============================================================================

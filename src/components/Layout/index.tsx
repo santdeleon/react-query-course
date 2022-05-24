@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import Container from '../Container';
-import Header from '../Header';
+import Navbar from '../Navbar';
 import Main from '../Main';
 
 // =============================================================================
@@ -23,7 +23,7 @@ const Layout: React.FC<React.HTMLProps<HTMLDivElement>> = ({ children }) => (
   <>
     <RainbowBorder />
     <Container>
-      <Header />
+      <Navbar />
       <Main>{children}</Main>
     </Container>
   </>

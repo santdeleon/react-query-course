@@ -110,8 +110,7 @@ interface HomeProps {
     toggleLabelFilter: (label: TLabel) => void;
     handleStatusSelect: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   };
-  isLoadingLabels: boolean;
-  isLoadingIssues: boolean;
+  loading: boolean;
   labelsError: unknown;
   issuesError: unknown;
 }
@@ -176,8 +175,7 @@ const useHomeProps = () => {
       toggleLabelFilter,
       handleStatusSelect,
     },
-    isLoadingLabels: labelsQuery.isLoading,
-    isLoadingIssues: issuesQuery.isLoading,
+    loading: labelsQuery.isLoading || issuesQuery.isLoading,
     labelsError: labelsQuery.error,
     issuesError: issuesQuery.error,
   };
@@ -202,13 +200,13 @@ const StatelessHome = React.memo((props: HomeProps) => (
             labelFilters: props.data.labelFilters,
             toggleLabelFilter: props.data.toggleLabelFilter,
           }}
-          loading={props.isLoadingLabels}
+          loading={props.loading}
           error={props.labelsError}
         />
       </Column>
     </IslandHeader>
     <IslandBody>
-      <IssueList data={props.data.issues} loading={props.isLoadingIssues} error={props.issuesError} />
+      <IssueList data={props.data.issues} loading={props.loading} error={props.issuesError} />
     </IslandBody>
   </Island>
 ));

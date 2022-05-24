@@ -3,6 +3,7 @@
   "author": "Santiago Deleon <sant@santdeleon.io>",
   "version": "0.0.1",
   "scripts": {
+    "check-types": "tsc --noEmit",
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview"
@@ -48,12 +49,5 @@
       "@commitlint/config-lerna-scopes",
       "@commitlint/config-conventional"
     ]
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "pretty-quick --staged --pattern '**/*.ts'",
-      "prepare-commit-msg": "exec < /dev/tty && git cz --hook || true",
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-    }
   }
 }

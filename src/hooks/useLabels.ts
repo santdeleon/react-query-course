@@ -1,8 +1,14 @@
 import { useQuery } from 'react-query';
 import { ILabel } from '../types';
 
+const BASE_LABELS_URL = '/api/labels';
+
+// =============================================================================
+// useLabels
+// =============================================================================
+
 const fetchLabels = async () => {
-  const res = await fetch('/api/labels');
+  const res = await fetch(BASE_LABELS_URL);
   const data: ILabel[] = await res.json();
   return data;
 };

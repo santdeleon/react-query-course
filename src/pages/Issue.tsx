@@ -1,13 +1,63 @@
-import React, { useCallback } from 'react';
+import React from 'react';
+import styled from 'styled-components';
 import { useParams } from 'react-router-dom';
-import { useQuery } from 'react-query';
-
-import IssueDetails from '../components/IssueDetails';
-import IssueComment from '../components/IssueComment';
 
 import { relativeDate, capitalizeFirstLetter } from '../utils';
 
-import { TIssue, TComment } from '../types';
+import { IComment, IIssue, IUser } from '../types';
+
+import { useIssueAndComments, useUser } from '../hooks';
+
+import IssueDetails from '../components/IssueDetails';
+import IssueDetailsSkeletonLoader from '../components/IssueDetails/IssueDetailsSkeletonLoader';
+import IssueComment from '../components/IssueComment';
+import Row from '../components/Row';
+import Column from '../components/Column';
+
+// =============================================================================
+// Styled Components
+// =============================================================================
+
+const Island = styled.div`
+  position: relative;
+  margin: 0 auto;
+  padding: 20px;
+  border-radius: 16px;
+  border-width: 2px 2px 4px;
+  border-style: solid;
+  border-color: #e8e8e8;
+  max-width: 600px;
+`;
+
+const IslandHeader = styled(Row).attrs({
+  align: 'flex-start',
+  margin: '0 0 20px 0',
+  padding: '0 0 20px 0',
+})`
+  border-bottom: 2px solid #e8e8e8;
+`;
+
+const IslandBody = styled(Row).attrs({
+  justify: 'space-between',
+})``;
+
+const CommentsContainer = styled(Column)``;
+
+// =============================================================================
+// Typedefs
+// =============================================================================
+
+interface IssueProps {
+  data: {
+    number?: string;
+    issue?: IIssue;
+    user?: IUser;
+    comments?: IComment[];
+  };
+  loading: boolean;
+  issueError: unknown;
+  userError: unknown;
+}
 
 // =============================================================================
 // Hooks
@@ -17,81 +67,71 @@ const useIssueProps = () => {
   const { number } = useParams();
 
   // fetch issue
-  const fetchIssue = useCallback(
-    async (): Promise<TIssue> => await (await fetch(`/api/issues/${number}`)).json(),
-    [number],
-  );
-  const issuesQuery = useQuery(['issues', number], fetchIssue);
-  const issue = issuesQuery.data;
+  const issueAndCommentsQuery = useIssueAndComments(number);
+  const [issue, comments] = issueAndCommentsQuery.data ?? [];
 
-  // fetch comments
-  const fetchComments = useCallback(
-    async (): Promise<TComment[]> => await (await fetch(`/api/issues/${number}/comments`)).json(),
-    [number],
-  );
-  const commentsQuery = useQuery(['comments', number], fetchComments);
-  const comments = commentsQuery.data ?? [];
-
-  // format props
-  const status = issue ? capitalizeFirstLetter(issue.status) : undefined;
-  const createdDate = issue ? relativeDate(issue.createdDate) : undefined;
-  const statusLabel = `opened this issue ${createdDate} · ${comments.length} comments`;
-
-  const error = issuesQuery.error || commentsQuery.error;
-  const loading = !issuesQuery.isFetched || !commentsQuery.isFetched;
+  // fetch user
+  const userQuery = useUser(issue?.createdBy);
+  const user = userQuery.data;
 
   return {
     data: {
       number,
-      title: issue?.title,
-      status,
-      createdBy: issue?.createdBy,
-      createdDate,
-      statusLabel,
+      issue,
+      user,
       comments,
     },
-    loading,
-    error,
+    loading: issueAndCommentsQuery.isLoading || userQuery.isLoading,
+    issueError: issueAndCommentsQuery.error,
+    userError: userQuery.error,
   };
 };
-
-// =============================================================================
-// Typedefs
-// =============================================================================
-
-interface IssueProps {
-  number: number;
-  title?: string;
-  status?: string;
-  createdBy?: string;
-  createdDate?: string;
-  statusLabel: string;
-  comments: TComment[];
-}
 
 // =============================================================================
 // Stateless Issue
 // =============================================================================
 
 const StatelessIssue = React.memo((props: IssueProps) => {
-  const { number, title, status, createdBy, statusLabel, comments } = props;
+  const { data, loading, issueError, userError } = props;
+  const { number, issue, user, comments } = data;
+
+  if (issueError) {
+    return <div>Failed to find issue {number}</div>;
+  }
 
   return (
-    <>
-      <IssueDetails number={number} title={title} status={status} createdBy={createdBy} statusLabel={statusLabel} />
-      <main>
-        {/* <section>
-          {comments.map(({ id, createdBy, createdDate, comment }) => (
-            <IssueComment
-              key={id}
-              avatar={`https://res.cloudinary.com/uidotdev/image/twitter_name/${createdBy}`}
-              createdBy={createdBy}
-              createdDate={relativeDate(createdDate)}
-              comment={comment}
-            />
-          ))}
-        </section> */}
-        {/* <aside>
+    <Island>
+      <IslandHeader>
+        {loading ? (
+          <IssueDetailsSkeletonLoader />
+        ) : issue ? (
+          <IssueDetails
+            number={number}
+            title={issue.title}
+            subtitle={`${user?.name || issue.createdBy} opened this issue ${relativeDate(issue.createdDate)} · ${
+              issue.comments.length
+            } comments`}
+            status={issue.status.length > 0 ? capitalizeFirstLetter(issue.status) : issue.status}
+          />
+        ) : null}
+      </IslandHeader>
+      <IslandBody>
+        <CommentsContainer>
+          {comments && (
+            <>
+              {comments.map((comment) => (
+                <IssueComment
+                  key={comment.id}
+                  createdBy={comment.createdBy}
+                  createdDate={relativeDate(comment.createdDate)}
+                  comment={comment.comment}
+                />
+              ))}
+            </>
+          )}
+        </CommentsContainer>
+
+        <aside>
           <div className="issue-options">
             <div>
               <span>Status</span>
@@ -107,9 +147,9 @@ const StatelessIssue = React.memo((props: IssueProps) => {
               <span>Labels</span>
             </div>
           </div>
-        </aside> */}
-      </main>
-    </>
+        </aside>
+      </IslandBody>
+    </Island>
   );
 });
 
@@ -118,15 +158,8 @@ const StatelessIssue = React.memo((props: IssueProps) => {
 // =============================================================================
 
 const Issue = () => {
-  const props: any = useIssueProps();
-
-  return props.loading ? (
-    <div>Loading...</div>
-  ) : props.error ? (
-    <div>{props.error}</div>
-  ) : (
-    <StatelessIssue {...props.data} />
-  );
+  const props = useIssueProps();
+  return <StatelessIssue {...props} />;
 };
 
 export default Issue;
