@@ -2,27 +2,52 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
-import { TLabel } from '../../types';
+import { TLabel, TStatus } from '../../types';
 
 import { hexToRGB } from '../../utils';
 
-import { BLUE, GREEN, ORANGE, PINK, PURPLE, RED, YELLOW } from '../../constants';
+import { BLUE, GREEN, ORANGE, PINK, PURPLE, RED, YELLOW, GRAY } from '../../constants';
 
 import CommentIcon from '../../assets/icons/CommentIcon';
 
 import Row from '../Row';
+import Column from '../Column';
 
 // =============================================================================
 // Styled Components
 // =============================================================================
 
 const StyledIssueListItem = styled.div`
-  padding: 15px;
+  position: relative;
   border-width: 2px 2px 4px;
   border-style: solid;
   border-color: #e5e0e0;
   border-radius: 6px;
   background-color: #fff;
+`;
+
+const StatusBar = styled.div<{ status: TStatus }>`
+  position: absolute;
+  width: 5px;
+  height: 100%;
+  border-radius: 3px 0 0 3px;
+  background-color: ${({ status }) => {
+    switch (status) {
+      case 'backlog':
+        return hexToRGB(GRAY, 0.5);
+      case 'todo':
+        return hexToRGB(BLUE, 0.5);
+      case 'inProgress':
+        return hexToRGB(YELLOW, 0.5);
+      case 'done':
+        return hexToRGB(GREEN, 0.5);
+      case 'cancelled':
+        return hexToRGB(RED, 0.5);
+      // handle undefined case
+      default:
+        return hexToRGB(GRAY, 0.5);
+    }
+  }};
 `;
 
 const AssigneeAvatar = styled.img`
@@ -131,6 +156,7 @@ const Badge = styled.span<{ label: TLabel }>`
 interface IssueListItemProps {
   title: string;
   number: number;
+  status: TStatus;
   labels: TLabel[];
   commentsLength: number;
   createdDate: string;
@@ -144,36 +170,40 @@ interface IssueListItemProps {
 // =============================================================================
 
 const IssueListItem = React.memo((props: IssueListItemProps) => {
-  const { title, number, labels, commentsLength, createdDate, assigneeName, assigneeAvatar, createdByName } = props;
+  const { title, number, status, labels, commentsLength, createdDate, assigneeName, assigneeAvatar, createdByName } =
+    props;
 
   return (
     <li>
       <StyledIssueListItem>
-        {/* Title and Avatar */}
-        <Row justify="space-between">
-          <Title to={`/issue/${number}`}>{title}</Title>
-          {assigneeAvatar && (
-            <AssigneeAvatar src={assigneeAvatar} alt={`${assigneeName}'s avatar` || 'Issue assignee'} />
-          )}
-        </Row>
-        {/* Timestamp and comment count */}
-        <SubtitleRow>
-          <Subtitle>
-            #{number} opened {createdDate} {createdByName && `by ${createdByName}`}
-          </Subtitle>
-          <Comments>
-            <CommentIcon />
-            {commentsLength}
-          </Comments>
-        </SubtitleRow>
-        {/* Labels */}
-        <Row align="center">
-          {labels.map((label) => (
-            <Badge key={label} label={label}>
-              {label}
-            </Badge>
-          ))}
-        </Row>
+        <StatusBar status={status} />
+        <Column padding="15px">
+          {/* Title and Avatar */}
+          <Row justify="space-between">
+            <Title to={`/issue/${number}`}>{title}</Title>
+            {assigneeAvatar && (
+              <AssigneeAvatar src={assigneeAvatar} alt={`${assigneeName}'s avatar` || 'Issue assignee'} />
+            )}
+          </Row>
+          {/* Timestamp and comment count */}
+          <SubtitleRow>
+            <Subtitle>
+              #{number} opened {createdDate} {createdByName && `by ${createdByName}`}
+            </Subtitle>
+            <Comments>
+              <CommentIcon />
+              {commentsLength}
+            </Comments>
+          </SubtitleRow>
+          {/* Labels */}
+          <Row align="center">
+            {labels.map((label) => (
+              <Badge key={label} label={label}>
+                {label}
+              </Badge>
+            ))}
+          </Row>
+        </Column>
       </StyledIssueListItem>
     </li>
   );

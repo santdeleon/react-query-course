@@ -63,6 +63,7 @@ const IssueList = React.memo((props: IssueListProps) =>
             key={issue.id}
             title={issue.title}
             number={issue.number}
+            status={issue.status}
             labels={issue.labels}
             createdDate={relativeDate(issue.createdDate)}
             commentsLength={issue.comments.length}

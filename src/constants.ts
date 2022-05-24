@@ -11,6 +11,7 @@ export const GREEN = '#37d813';
 export const BLUE = '#13bbd8';
 export const PURPLE = '#7213d8';
 export const PINK = '#d813cb';
+export const GRAY = '#d2d2d2';
 
 // =============================================================================
 // Example Data

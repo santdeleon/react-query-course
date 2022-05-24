@@ -266,6 +266,7 @@ const StatelessHome = React.memo((props: HomeProps) => (
       />
     </Body>
     {!props.loading && (
+      // TODO: Hook these up to pagination
       <Footer>
         <PaginationButton margin="0 25px 0 0">Previous</PaginationButton>
         <span>Page 1</span>
