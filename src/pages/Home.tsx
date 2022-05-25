@@ -11,6 +11,7 @@ import Row from '../components/Row';
 import Column from '../components/Column';
 import LabelList from '../components/LabelList';
 import StatusSelect from '../components/StatusSelect';
+import Spinner from '../components/Spinner';
 
 // =============================================================================
 // Styled Components
@@ -156,6 +157,7 @@ interface HomeProps {
     handleStatusSelect: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   };
   loading: boolean;
+  fetching: boolean;
   labelsError: unknown;
   issuesError: unknown;
 }
@@ -226,6 +228,8 @@ const useHomeProps = () => {
       (issuesQuery.fetchStatus !== 'idle' && issuesQuery.isLoading) ||
       (searchedIssuesQuery.fetchStatus !== 'idle' && searchedIssuesQuery.isLoading) ||
       (usersQuery.fetchStatus !== 'idle' && usersQuery.isLoading),
+    fetching:
+      labelsQuery.isFetching || issuesQuery.isFetching || searchedIssuesQuery.isFetching || usersQuery.isFetching,
     labelsError: labelsQuery.error,
     issuesError: issuesQuery.error,
   };
@@ -239,9 +243,12 @@ const StatelessHome = React.memo((props: HomeProps) => (
   <>
     <CreateIssueButton>+</CreateIssueButton>
     <Header>
-      <Row align="center" margin="0 0 10px 0">
-        <Title>Issues</Title>
-        <StatusSelect status={props.data.status} handleChange={props.data.handleStatusSelect} />
+      <Row align="center" justify="space-between" margin="0 0 10px 0">
+        <Row>
+          <Title>Issues</Title>
+          <StatusSelect status={props.data.status} handleChange={props.data.handleStatusSelect} />
+        </Row>
+        {!props.loading && props.fetching && <Spinner />}
       </Row>
       <LabelList
         data={{
