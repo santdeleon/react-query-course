@@ -45,8 +45,16 @@ const Searchbar = () => {
     [setQuery],
   );
 
+  const handleSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      navigate(`/?search=${query}`);
+    },
+    [query, setQuery],
+  );
+
   return (
-    <form>
+    <form onSubmit={handleSubmit}>
       <Input
         type="search"
         id="search"
@@ -54,11 +62,6 @@ const Searchbar = () => {
         value={query}
         placeholder="Search Issues..."
         onChange={handleChange}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            navigate(`/?search${query}`);
-          }
-        }}
       />
     </form>
   );
