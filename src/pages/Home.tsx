@@ -221,7 +221,11 @@ const useHomeProps = () => {
       toggleLabelFilter,
       handleStatusSelect,
     },
-    loading: labelsQuery.isLoading || issuesQuery.isLoading || usersQuery.isLoading,
+    loading:
+      (labelsQuery.fetchStatus !== 'idle' && labelsQuery.isLoading) ||
+      (issuesQuery.fetchStatus !== 'idle' && issuesQuery.isLoading) ||
+      (searchedIssuesQuery.fetchStatus !== 'idle' && searchedIssuesQuery.isLoading) ||
+      (usersQuery.fetchStatus !== 'idle' && usersQuery.isLoading),
     labelsError: labelsQuery.error,
     issuesError: issuesQuery.error,
   };
