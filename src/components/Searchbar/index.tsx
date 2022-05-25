@@ -49,6 +49,7 @@ const Searchbar = () => {
     (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       navigate(`/?search=${query}`);
+      setQuery('');
     },
     [query, setQuery],
   );
