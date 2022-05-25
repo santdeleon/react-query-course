@@ -1,5 +1,6 @@
 import React from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
+import { ReactQueryDevtools } from 'react-query/devtools';
 
 // =============================================================================
 // Constants
@@ -16,7 +17,10 @@ const client = new QueryClient();
 // =============================================================================
 
 const QueryProvider: React.FC<React.HTMLProps<HTMLDivElement>> = ({ children }) => (
-  <QueryClientProvider client={client}>{children}</QueryClientProvider>
+  <QueryClientProvider client={client}>
+    {children}
+    <ReactQueryDevtools />
+  </QueryClientProvider>
 );
 
 export default QueryProvider;

@@ -2,15 +2,14 @@ import { useQuery } from 'react-query';
 
 import { IUser } from '../types';
 
-const BASE_USER_URL = '/api/users';
+import { fetchWithError } from '../utils';
 
 // =============================================================================
 // useUser
 // =============================================================================
 
 const fetchUser = async (userId: string) => {
-  const res = await fetch(`${BASE_USER_URL}/${userId}`);
-  const data: IUser = await res.json();
+  const data: IUser = await fetchWithError(`${'/api/users'}/${userId}`);
   return data;
 };
 
@@ -25,6 +24,7 @@ const useUser = (userId?: string) => {
       return user;
     },
     enabled: !!userId,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };
 
@@ -53,5 +53,6 @@ export const useMultipleUsers = (userIds?: string[]) => {
       return users;
     },
     enabled: !!userIds,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };

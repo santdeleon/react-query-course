@@ -3,6 +3,7 @@ import styled from 'styled-components';
 
 import Row from '../Row';
 import Column from '../Column';
+import { hexToRGB } from '../../utils';
 
 // =============================================================================
 // Typedefs

@@ -35,3 +35,16 @@ export const relativeDate = (date: string | number | Date): string => {
     return delta + ' days ago';
   }
 };
+
+export const fetchWithError = async (url: string, opts?: RequestInit) => {
+  const response = await fetch(url, opts);
+
+  if (response.status !== 200) throw new Error('Error in request');
+
+  const data = await response.json();
+  const { error } = data;
+
+  if (error) throw new Error(error);
+
+  return data;
+};

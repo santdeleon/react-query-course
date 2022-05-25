@@ -1,15 +1,15 @@
 import { useQuery } from 'react-query';
+
 import { ILabel } from '../types';
 
-const BASE_LABELS_URL = '/api/labels';
+import { fetchWithError } from '../utils';
 
 // =============================================================================
 // useLabels
 // =============================================================================
 
 const fetchLabels = async () => {
-  const res = await fetch(BASE_LABELS_URL);
-  const data: ILabel[] = await res.json();
+  const data: ILabel[] = await fetchWithError('/api/labels');
   return data;
 };
 
@@ -22,6 +22,7 @@ const useLabels = () => {
       const labels = await fetchLabels();
       return labels;
     },
+    staleTime: Infinity,
   });
 };
 

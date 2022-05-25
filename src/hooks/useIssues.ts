@@ -2,6 +2,8 @@ import { useQuery } from 'react-query';
 
 import { TLabel, TStatus, IIssue, IComment } from '../types';
 
+import { fetchWithError } from '../utils';
+
 const BASE_ISSUES_URL = '/api/issues';
 
 // =============================================================================
@@ -33,8 +35,7 @@ const fetchIssues = async (opts?: FetchIssuesOpts) => {
     url += statusString;
   }
 
-  const res = await fetch(url);
-  const data: IIssue[] = await res.json();
+  const data: IIssue[] = await fetchWithError(url);
   return data;
 };
 
@@ -45,6 +46,7 @@ const useIssues = (opts?: FetchIssuesOpts) => {
       const issues = await fetchIssues(opts);
       return issues;
     },
+    staleTime: 1000 * 60, // 1 minute,
   });
 };
 
@@ -62,8 +64,7 @@ interface IssuesByQueryResponse {
 }
 
 const fetchIssuesByQuery = async (query: string) => {
-  const res = await fetch(`/api/search/issues?q=${query}`);
-  const data: IssuesByQueryResponse = await res.json();
+  const data: IssuesByQueryResponse = await fetchWithError(`/api/search/issues?q=${query}`);
   return data;
 };
 
@@ -75,7 +76,7 @@ export const useIssuesByQuery = (query: string | null) => {
       const issuesByQuery = await fetchIssuesByQuery(query);
       return issuesByQuery;
     },
-    enabled: !!query,
+    enabled: !!query && query.length > 0,
   });
 };
 
@@ -86,14 +87,12 @@ export const useIssuesByQuery = (query: string | null) => {
 const QUERY_KEY_ISSUE_AND_COMMENTS = 'issue-and-comments';
 
 const fetchIssue = async (issueId: string) => {
-  const res = await fetch(`${BASE_ISSUES_URL}/${issueId}`);
-  const data: IIssue = await res.json();
+  const data: IIssue = await fetchWithError(`${BASE_ISSUES_URL}/${issueId}`);
   return data;
 };
 
 const fetchIssueComments = async (issueId: string) => {
-  const res = await fetch(`${BASE_ISSUES_URL}/${issueId}/comments`);
-  const data: IComment[] = await res.json();
+  const data: IComment[] = await fetchWithError(`${BASE_ISSUES_URL}/${issueId}/comments`);
   return data;
 };
 

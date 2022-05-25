@@ -21,6 +21,10 @@ const Title = styled.h2`
 const Subtitle = styled.p`
   color: #918f8f;
   margin: 0;
+  span {
+    color: ${hexToRGB('#222222', 0.7)};
+    font-weight: 500;
+  }
 `;
 
 const IssueNumber = styled.h3`
@@ -94,7 +98,7 @@ const IssueDetails = React.memo((props: IssueDetailsProps) => {
       </Row>
       <Title>{props.title}</Title>
       <Subtitle>
-        {props.createdBy} opened this issue {props.createdDate} · {props.commentsLength} comments
+        <span>{props.createdBy}</span> opened this issue {props.createdDate} · {props.commentsLength} comments
       </Subtitle>
     </Column>
   );
