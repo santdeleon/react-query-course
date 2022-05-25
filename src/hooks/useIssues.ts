@@ -4,24 +4,20 @@ import { TLabel, TStatus, IIssue, IComment } from '../types';
 
 import { fetchWithError } from '../utils';
 
-const BASE_ISSUES_URL = '/api/issues';
-
 // =============================================================================
 // useIssues
 // =============================================================================
 
-const QUERY_KEY_ISSUES = 'issues';
-
-interface FetchIssuesOpts {
+interface FetchIssuesArgs {
   labels?: TLabel[];
   status?: TStatus | 'default';
 }
 
-const fetchIssues = async (opts?: FetchIssuesOpts) => {
-  const labels = opts?.labels;
+const fetchIssues = async (args?: FetchIssuesArgs, opts?: RequestInit) => {
+  const labels = args?.labels;
   const hasLabels = labels && labels.length > 0;
-  const status = opts?.status;
-  let url = `${BASE_ISSUES_URL}?`;
+  const status = args?.status;
+  let url = '/api/issues?';
 
   // apply label filters
   if (hasLabels) {
@@ -35,18 +31,17 @@ const fetchIssues = async (opts?: FetchIssuesOpts) => {
     url += statusString;
   }
 
-  const data: IIssue[] = await fetchWithError(url);
+  const data: IIssue[] = await fetchWithError(url, opts);
   return data;
 };
 
-const useIssues = (opts?: FetchIssuesOpts) => {
+const useIssues = (args?: FetchIssuesArgs) => {
   return useQuery({
-    queryKey: [QUERY_KEY_ISSUES, { opts }],
-    async queryFn() {
-      const issues = await fetchIssues(opts);
+    queryKey: ['issues', 'labels[]=', args?.labels, 'status=', args?.status],
+    async queryFn({ signal }) {
+      const issues = await fetchIssues(args, { signal });
       return issues;
     },
-    staleTime: 1000 * 60, // 1 minute,
   });
 };
 
@@ -56,24 +51,22 @@ export default useIssues;
 // useIssuesByQuery
 // =============================================================================
 
-const QUERY_KEY_ISSUES_QUERY = 'issues-by-query';
-
 interface IssuesByQueryResponse {
   count: number;
   items: IIssue[];
 }
 
-const fetchIssuesByQuery = async (query: string) => {
-  const data: IssuesByQueryResponse = await fetchWithError(`/api/search/issues?q=${query}`);
+const fetchIssuesByQuery = async (query: string, opts?: RequestInit) => {
+  const data: IssuesByQueryResponse = await fetchWithError(`/api/search/issues?q=${query}`, opts);
   return data;
 };
 
 export const useIssuesByQuery = (query: string | null) => {
   return useQuery({
-    queryKey: [QUERY_KEY_ISSUES_QUERY, { query }],
-    async queryFn() {
+    queryKey: ['search', 'issues', 'q=', query],
+    async queryFn({ signal }) {
       if (!query) return;
-      const issuesByQuery = await fetchIssuesByQuery(query);
+      const issuesByQuery = await fetchIssuesByQuery(query, { signal });
       return issuesByQuery;
     },
     enabled: !!query && query.length > 0,
@@ -84,29 +77,27 @@ export const useIssuesByQuery = (query: string | null) => {
 // useIssueAndComments
 // =============================================================================
 
-const QUERY_KEY_ISSUE_AND_COMMENTS = 'issue-and-comments';
-
-const fetchIssue = async (issueId: string) => {
-  const data: IIssue = await fetchWithError(`${BASE_ISSUES_URL}/${issueId}`);
+const fetchIssue = async (issueId: string, opts?: RequestInit) => {
+  const data: IIssue = await fetchWithError(`/api/issues/${issueId}`, opts);
   return data;
 };
 
-const fetchIssueComments = async (issueId: string) => {
-  const data: IComment[] = await fetchWithError(`${BASE_ISSUES_URL}/${issueId}/comments`);
+const fetchIssueComments = async (issueId: string, opts?: RequestInit) => {
+  const data: IComment[] = await fetchWithError(`/api/issues/${issueId}/comments`, opts);
   return data;
 };
 
-const fetchIssueAndComments = async (issueId: string) => {
-  const issueAndComments = await Promise.all([fetchIssue(issueId), fetchIssueComments(issueId)]);
+const fetchIssueAndComments = async (issueId: string, opts?: RequestInit) => {
+  const issueAndComments = await Promise.all([fetchIssue(issueId, opts), fetchIssueComments(issueId, opts)]);
   return issueAndComments;
 };
 
 export const useIssueAndComments = (issueId?: string) => {
   return useQuery({
-    queryKey: [QUERY_KEY_ISSUE_AND_COMMENTS, { issueId }],
-    async queryFn() {
+    queryKey: ['issues', issueId, 'comments'],
+    async queryFn({ signal }) {
       if (!issueId) throw new Error('You must provide an issue ID');
-      const issueAndComments = await fetchIssueAndComments(issueId);
+      const issueAndComments = await fetchIssueAndComments(issueId, { signal });
       return issueAndComments;
     },
     enabled: !!issueId,

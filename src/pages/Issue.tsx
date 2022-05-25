@@ -63,7 +63,7 @@ const useIssueProps = () => {
   const issueIDs = issue ? [issue.assignee, issue.createdBy] : [];
   const commentIDs = comments ? comments.map((c) => c.createdBy) : [];
   const userIDSet = new Set([...issueIDs].concat(commentIDs));
-  const usersQuery = useMultipleUsers([...userIDSet]);
+  const usersQuery = useMultipleUsers([...userIDSet].filter(Boolean));
   const users = usersQuery.data ?? [];
   const userIDToUser = useMemo(() => new Map(users.map((user) => [user.id, user])), [users]);
 

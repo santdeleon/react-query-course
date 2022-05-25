@@ -13,11 +13,9 @@ const fetchLabels = async () => {
   return data;
 };
 
-const QUERY_KEY_LABELS = 'labels';
-
 const useLabels = () => {
   return useQuery({
-    queryKey: [QUERY_KEY_LABELS],
+    queryKey: ['labels'],
     async queryFn() {
       const labels = await fetchLabels();
       return labels;

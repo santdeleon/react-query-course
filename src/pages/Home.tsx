@@ -193,7 +193,7 @@ const useHomeProps = () => {
       : [...new Set(issues.flatMap((r) => [r.assignee, r.createdBy]))];
 
   // fetch and format user data
-  const usersQuery = useMultipleUsers(resultUsers);
+  const usersQuery = useMultipleUsers(resultUsers.filter(Boolean));
   const users = usersQuery.data ?? [];
   const userIDToUser = useMemo(() => new Map(users.map((user) => [user.id, user])), [users]);
 
