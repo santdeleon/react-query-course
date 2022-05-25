@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { TLabel, ILabel } from '../../types';
+import { RED } from '../../constants';
 
 import SkeletonLoader from '../../components/SkeletonLoader';
 
@@ -19,6 +20,11 @@ const UnorderedList = styled.ul`
   li:not(:last-child) {
     margin-right: 10px;
   }
+`;
+
+const ErrorMessage = styled.p`
+  margin: 0;
+  color: ${RED};
 `;
 
 // =============================================================================
@@ -66,7 +72,7 @@ const LabelList = React.memo((props: LabelListProps) => {
   return props.loading ? (
     <SkeletonLoader width="200px" height="14px" borderRadius="6px" />
   ) : props.error ? (
-    <h3>Failed to fetch labels</h3>
+    <ErrorMessage>Failed to fetch labels</ErrorMessage>
   ) : (
     <StatelessLabelList {...props.data} />
   );

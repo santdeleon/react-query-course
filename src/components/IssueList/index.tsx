@@ -5,6 +5,8 @@ import { IIssue, IUser } from '../../types';
 
 import { relativeDate } from '../../utils';
 
+import { RED } from '../../constants';
+
 import SkeletonLoader from '../../components/SkeletonLoader';
 
 import IssueListItem from './IssueListItem';
@@ -21,6 +23,11 @@ const List = styled.ul`
       margin-bottom: 20px;
     }
   }
+`;
+
+const ErrorMessage = styled.p`
+  margin: 0;
+  color: ${RED};
 `;
 
 // =============================================================================
@@ -52,7 +59,7 @@ const IssueList = React.memo((props: IssueListProps) =>
       ))}
     </List>
   ) : props.error ? (
-    <h3>Failed to fetch issues</h3>
+    <ErrorMessage>Failed to fetch issues</ErrorMessage>
   ) : props.data.issues.length > 0 ? (
     <List>
       {props.data.issues.map((issue) => {
