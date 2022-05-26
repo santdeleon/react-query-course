@@ -4,6 +4,12 @@ import { IUser } from '../types';
 
 import { fetchWithError } from '../utils';
 
+const PLACEHOLDER_USER = {
+  id: '',
+  profilePictureUrl: 'https://placekitten.com/g/22/22',
+  name: '',
+};
+
 // =============================================================================
 // useUser
 // =============================================================================
@@ -23,6 +29,7 @@ const useUser = (userId?: string) => {
     },
     enabled: !!userId,
     staleTime: 1000 * 60 * 5, // 5 minutes
+    placeholderData: PLACEHOLDER_USER,
   });
 };
 
@@ -50,6 +57,7 @@ export const useMultipleUsers = (userIds?: string[]) => {
       return users;
     },
     enabled: !!userIds,
+    placeholderData: new Array(userIds?.length).fill(PLACEHOLDER_USER),
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };
