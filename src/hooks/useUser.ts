@@ -17,7 +17,7 @@ const useUser = (userId?: string) => {
   return useQuery({
     queryKey: ['users', userId],
     async queryFn({ signal }) {
-      if (!userId) throw new Error('You must provide a user ID');
+      if (!userId) return;
       const user = await fetchUser(userId, { signal });
       return user;
     },
@@ -47,7 +47,7 @@ export const useMultipleUsers = (userIds?: string[]) => {
   return useQuery({
     queryKey: ['users', userIds],
     async queryFn({ signal }) {
-      if (!userIds || userIds.length <= 0) throw new Error('You must provide user IDs');
+      if (!userIds) return;
       const users = await fetchMultipleUsers(userIds, { signal });
       for (const user of users) {
         queryClient.setQueryData(['users', user.id], user);

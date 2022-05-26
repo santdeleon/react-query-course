@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 
 import { TLabel, TStatus, IIssue, IComment } from '../types';
@@ -37,8 +38,14 @@ const fetchIssues = async (args?: FetchIssuesArgs, opts?: RequestInit) => {
 
 const useIssues = (args?: FetchIssuesArgs) => {
   const queryClient = useQueryClient();
+  const queryKey = useMemo(() => {
+    const queryKey: any[] = ['issues'];
+    if (args?.labels && args.labels.length > 0) queryKey.push('labels', args.labels);
+    if (args?.status && args.status !== 'default') queryKey.push('status', args.status);
+    return queryKey;
+  }, [args]);
   return useQuery({
-    queryKey: ['issues', 'labels[]=', args?.labels, 'status=', args?.status],
+    queryKey,
     async queryFn({ signal }) {
       const issues = await fetchIssues(args, { signal });
       for (const issue of issues) {
@@ -68,7 +75,7 @@ const fetchIssuesByQuery = async (query: string, opts?: RequestInit) => {
 export const useIssuesByQuery = (query: string | null) => {
   const queryClient = useQueryClient();
   return useQuery({
-    queryKey: ['search', 'issues', 'q=', query],
+    queryKey: ['search', 'issues', query],
     async queryFn({ signal }) {
       if (!query) return;
       const issuesByQuery = await fetchIssuesByQuery(query, { signal });
