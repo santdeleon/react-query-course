@@ -5,9 +5,9 @@ import { IUser } from '../types';
 import { fetchWithError } from '../utils';
 
 const PLACEHOLDER_USER = {
-  id: '',
+  id: 'ID',
   profilePictureUrl: 'https://placekitten.com/g/22/22',
-  name: '',
+  name: 'NAME',
 };
 
 // =============================================================================
@@ -57,7 +57,7 @@ export const useMultipleUsers = (userIds?: string[]) => {
       return users;
     },
     enabled: !!userIds,
-    placeholderData: new Array(userIds?.length).fill(PLACEHOLDER_USER),
+    // placeholderData: new Array(userIds?.length).fill(PLACEHOLDER_USER) as IUser[],
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };

@@ -224,7 +224,6 @@ const useHomeProps = () => {
       handleStatusSelect,
     },
     loading:
-      (labelsQuery.fetchStatus !== 'idle' && labelsQuery.isLoading) ||
       (issuesQuery.fetchStatus !== 'idle' && issuesQuery.isLoading) ||
       (searchedIssuesQuery.fetchStatus !== 'idle' && searchedIssuesQuery.isLoading) ||
       (usersQuery.fetchStatus !== 'idle' && usersQuery.isLoading),
@@ -255,8 +254,6 @@ const StatelessHome = React.memo((props: HomeProps) => (
           labelFilters: props.data.labelFilters,
           toggleLabelFilter: props.data.toggleLabelFilter,
         }}
-        loading={props.loading}
-        error={props.labelsError}
       />
     </Header>
     <Body isLoading={props.loading}>

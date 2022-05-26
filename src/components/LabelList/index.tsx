@@ -2,9 +2,6 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { TLabel, ILabel } from '../../types';
-import { RED } from '../../constants';
-
-import SkeletonLoader from '../../components/SkeletonLoader';
 
 import LabelListItem from './LabelListItem';
 
@@ -22,60 +19,35 @@ const UnorderedList = styled.ul`
   }
 `;
 
-const ErrorMessage = styled.p`
-  margin: 0;
-  color: ${RED};
-`;
-
 // =============================================================================
 // Typedefs
 // =============================================================================
 
-interface LabelListData {
-  labels: ILabel[];
-  labelFilters: Set<TLabel>;
-  toggleLabelFilter: (label: TLabel) => void;
-}
-
 interface LabelListProps {
-  data: LabelListData;
-  loading: boolean;
-  error: unknown;
+  data: {
+    labels: ILabel[];
+    labelFilters: Set<TLabel>;
+    toggleLabelFilter: (label: TLabel) => void;
+  };
 }
-
-// =============================================================================
-// Stateless Label List
-// =============================================================================
-
-const StatelessLabelList = React.memo((props: LabelListData) => {
-  return (
-    <UnorderedList>
-      {props.labels.map((label) => (
-        <LabelListItem
-          key={label.id}
-          label={label.id}
-          isActive={props.labelFilters.has(label.id)}
-          onClick={() => props.toggleLabelFilter(label.id)}
-        >
-          {label.name}
-        </LabelListItem>
-      ))}
-    </UnorderedList>
-  );
-});
 
 // =============================================================================
 // Main Component
 // =============================================================================
 
-const LabelList = React.memo((props: LabelListProps) => {
-  return props.loading ? (
-    <SkeletonLoader width="200px" height="14px" borderRadius="6px" />
-  ) : props.error ? (
-    <ErrorMessage>Failed to fetch labels</ErrorMessage>
-  ) : (
-    <StatelessLabelList {...props.data} />
-  );
-});
+const LabelList = React.memo((props: LabelListProps) => (
+  <UnorderedList>
+    {props.data.labels.map((label) => (
+      <LabelListItem
+        key={label.id}
+        label={label.id}
+        isActive={props.data.labelFilters.has(label.id)}
+        onClick={() => props.data.toggleLabelFilter(label.id)}
+      >
+        {label.name}
+      </LabelListItem>
+    ))}
+  </UnorderedList>
+));
 
 export default LabelList;
