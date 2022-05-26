@@ -143,7 +143,7 @@ const StatelessIssue = React.memo((props: IssueProps) => {
                 return (
                   <IssueComment
                     key={comment.id}
-                    avatar={commentCreator?.profilePictureUrl}
+                    avatar={commentCreator?.profilePictureUrl || 'https://placekitten.com/g/22/22'}
                     createdByName={commentCreator?.name || comment.createdBy}
                     createdDate={relativeDate(comment.createdDate)}
                     comment={comment.comment}

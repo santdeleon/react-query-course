@@ -53,7 +53,7 @@ const IssueCommentCardBody = styled(Row)`
 // =============================================================================
 
 interface IssueCommentProps {
-  avatar?: string;
+  avatar: string;
   createdByName: string;
   createdDate: string;
   comment: string;
@@ -68,7 +68,7 @@ const IssueComment = React.memo((props: IssueCommentProps) => {
 
   return (
     <StyledIssueComment>
-      {avatar && <Avatar src={avatar} alt={createdByName} />}
+      <Avatar src={avatar} alt={createdByName} />
       <IssueCommentCard>
         <IssueCommentCardHeader>
           <Name>{createdByName}</Name> commented {createdDate}
