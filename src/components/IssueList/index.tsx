@@ -1,9 +1,12 @@
 import React from 'react';
+import { useQueryClient } from 'react-query';
 import styled from 'styled-components';
 
 import { IIssue, IUser } from '../../types';
 
 import { relativeDate } from '../../utils';
+
+import { fetchIssueComments, fetchMultipleUsers } from '../../hooks';
 
 import { RED } from '../../constants';
 
@@ -49,8 +52,10 @@ interface IssueListProps {
 // Main Component
 // =============================================================================
 
-const IssueList = React.memo((props: IssueListProps) =>
-  props.loading ? (
+const IssueList = React.memo((props: IssueListProps) => {
+  const queryClient = useQueryClient();
+
+  return props.loading ? (
     <List>
       {[1, 2, 3, 4].map((n) => (
         <li key={n}>
@@ -65,6 +70,21 @@ const IssueList = React.memo((props: IssueListProps) =>
       {props.data.issues.map((issue) => {
         const assignee = props.data.userIDToUser.get(issue.assignee);
         const createdBy = props.data.userIDToUser.get(issue.createdBy);
+
+        const prefetchIssueComments = async () => {
+          await queryClient.prefetchQuery(['issues', issue.number, 'comments'], async () => {
+            return fetchIssueComments(issue.number);
+          });
+        };
+
+        const prefetchIssueUsers = async () => {
+          const ids: string[] = [];
+
+          if (assignee?.id) ids.push(assignee.id);
+          if (createdBy?.id) ids.push(createdBy.id);
+          if (ids.length > 0) await queryClient.prefetchQuery(['users', ids], async () => fetchMultipleUsers(ids));
+        };
+
         return (
           <IssueListItem
             key={issue.id}
@@ -77,13 +97,17 @@ const IssueList = React.memo((props: IssueListProps) =>
             assigneeName={assignee?.name}
             assigneeAvatar={assignee?.profilePictureUrl}
             createdByName={createdBy?.name}
+            onMouseEnter={() => {
+              prefetchIssueComments();
+              prefetchIssueUsers();
+            }}
           />
         );
       })}
     </List>
   ) : (
     <div>No issues...</div>
-  ),
-);
+  );
+});
 
 export default IssueList;

@@ -228,8 +228,7 @@ const useHomeProps = () => {
       (issuesQuery.fetchStatus !== 'idle' && issuesQuery.isLoading) ||
       (searchedIssuesQuery.fetchStatus !== 'idle' && searchedIssuesQuery.isLoading) ||
       (usersQuery.fetchStatus !== 'idle' && usersQuery.isLoading),
-    fetching:
-      labelsQuery.isFetching || issuesQuery.isFetching || searchedIssuesQuery.isFetching || usersQuery.isFetching,
+    fetching: issuesQuery.isFetching || searchedIssuesQuery.isFetching || usersQuery.isFetching,
     labelsError: labelsQuery.error,
     issuesError: issuesQuery.error,
   };

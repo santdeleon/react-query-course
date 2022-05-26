@@ -6,7 +6,9 @@ import { relativeDate, capitalizeFirstLetter } from '../utils';
 
 import { IComment, IIssue, IUser } from '../types';
 
-import { useIssueAndComments, useMultipleUsers } from '../hooks';
+import { useIssue, useIssueComments, useMultipleUsers } from '../hooks';
+
+import { RED } from '../constants';
 
 import IssueDetails from '../components/IssueDetails';
 import IssueDetailsSkeletonLoader from '../components/IssueDetails/IssueDetailsSkeletonLoader';
@@ -30,6 +32,11 @@ const Body = styled(Column).attrs({})`
   border-radius: 0 0 14px 14px;
 `;
 
+const ErrorMessage = styled.p`
+  margin: 0;
+  color: ${RED};
+`;
+
 // =============================================================================
 // Typedefs
 // =============================================================================
@@ -45,6 +52,7 @@ interface IssueProps {
   };
   loading: boolean;
   issueError: unknown;
+  commentsError: unknown;
   usersError: unknown;
 }
 
@@ -54,10 +62,15 @@ interface IssueProps {
 
 const useIssueProps = () => {
   const { number } = useParams();
+  const numberAsNum = number ? parseFloat(number) : undefined;
 
   // fetch issue
-  const issueAndCommentsQuery = useIssueAndComments(number);
-  const [issue, comments] = issueAndCommentsQuery.data ?? [];
+  const issueQuery = useIssue(numberAsNum);
+  const issue = issueQuery.data;
+
+  // fetch issue comments
+  const commentsQuery = useIssueComments(numberAsNum);
+  const comments = commentsQuery.data;
 
   // fetch and format user data
   const issueIDs = issue ? [issue.assignee, issue.createdBy] : [];
@@ -74,8 +87,9 @@ const useIssueProps = () => {
       comments,
       userIDToUser,
     },
-    loading: issueAndCommentsQuery.isLoading || usersQuery.isLoading,
-    issueError: issueAndCommentsQuery.error,
+    loading: issueQuery.isLoading || commentsQuery.isLoading,
+    issueError: issueQuery.error,
+    commentsError: commentsQuery.error,
     usersError: usersQuery.error,
   };
 };
@@ -85,19 +99,16 @@ const useIssueProps = () => {
 // =============================================================================
 
 const StatelessIssue = React.memo((props: IssueProps) => {
-  const { data, loading, issueError, usersError } = props;
+  const { data, loading, issueError, commentsError } = props;
   const { number, issue, userIDToUser, comments } = data;
-
-  // TODO: this isn't quite right
-  if (issueError) {
-    return <div>Failed to find issue {number}</div>;
-  }
 
   return (
     <>
       <Header>
         {loading ? (
           <IssueDetailsSkeletonLoader />
+        ) : issueError ? (
+          <ErrorMessage>Failed to fetch issue</ErrorMessage>
         ) : issue ? (
           <IssueDetails
             number={number}
@@ -110,21 +121,25 @@ const StatelessIssue = React.memo((props: IssueProps) => {
         ) : null}
       </Header>
       <Body>
-        {loading
-          ? [1, 2, 3, 4].map((n) => <IssueCommentSkeletonLoader key={n} />)
-          : comments && (
-              <>
-                {comments.map((comment) => (
-                  <IssueComment
-                    key={comment.id}
-                    avatar={userIDToUser.get(comment.createdBy)?.profilePictureUrl}
-                    createdBy={userIDToUser.get(comment.createdBy)?.name || comment.createdBy}
-                    createdDate={relativeDate(comment.createdDate)}
-                    comment={comment.comment}
-                  />
-                ))}
-              </>
-            )}
+        {loading ? (
+          [1, 2, 3, 4].map((n) => <IssueCommentSkeletonLoader key={n} />)
+        ) : commentsError ? (
+          <ErrorMessage>Failed to fetch comments</ErrorMessage>
+        ) : (
+          comments && (
+            <>
+              {comments.map((comment) => (
+                <IssueComment
+                  key={comment.id}
+                  avatar={userIDToUser.get(comment.createdBy)?.profilePictureUrl}
+                  createdBy={userIDToUser.get(comment.createdBy)?.name || comment.createdBy}
+                  createdDate={relativeDate(comment.createdDate)}
+                  comment={comment.comment}
+                />
+              ))}
+            </>
+          )
+        )}
       </Body>
     </>
   );

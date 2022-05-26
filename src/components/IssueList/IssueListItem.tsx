@@ -121,6 +121,7 @@ interface IssueListItemProps {
   assigneeName?: string;
   assigneeAvatar?: string;
   createdByName?: string;
+  onMouseEnter: () => void;
 }
 
 // =============================================================================
@@ -128,8 +129,18 @@ interface IssueListItemProps {
 // =============================================================================
 
 const IssueListItem = React.memo((props: IssueListItemProps) => {
-  const { title, number, status, labels, commentsLength, createdDate, assigneeName, assigneeAvatar, createdByName } =
-    props;
+  const {
+    title,
+    number,
+    status,
+    labels,
+    commentsLength,
+    createdDate,
+    assigneeAvatar,
+    assigneeName,
+    createdByName,
+    onMouseEnter,
+  } = props;
 
   return (
     <li>
@@ -138,9 +149,11 @@ const IssueListItem = React.memo((props: IssueListItemProps) => {
         <Column padding="15px">
           {/* Title and Avatar */}
           <Row justify="space-between">
-            <Title to={`/issue/${number}`}>{title}</Title>
+            <Title to={`/issue/${number}`} onMouseEnter={onMouseEnter}>
+              {title}
+            </Title>
             {assigneeAvatar && (
-              <AssigneeAvatar src={assigneeAvatar} alt={`${assigneeName}'s avatar` || 'Issue assignee'} />
+              <AssigneeAvatar src={assigneeAvatar} alt={assigneeName || `Issue #${number}'s assignee`} />
             )}
           </Row>
           {/* Timestamp and comment count */}

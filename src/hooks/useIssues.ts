@@ -1,4 +1,4 @@
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 
 import { TLabel, TStatus, IIssue, IComment } from '../types';
 
@@ -36,10 +36,14 @@ const fetchIssues = async (args?: FetchIssuesArgs, opts?: RequestInit) => {
 };
 
 const useIssues = (args?: FetchIssuesArgs) => {
+  const queryClient = useQueryClient();
   return useQuery({
     queryKey: ['issues', 'labels[]=', args?.labels, 'status=', args?.status],
     async queryFn({ signal }) {
       const issues = await fetchIssues(args, { signal });
+      for (const issue of issues) {
+        queryClient.setQueryData(['issues', issue.number], issue);
+      }
       return issues;
     },
   });
@@ -62,11 +66,15 @@ const fetchIssuesByQuery = async (query: string, opts?: RequestInit) => {
 };
 
 export const useIssuesByQuery = (query: string | null) => {
+  const queryClient = useQueryClient();
   return useQuery({
     queryKey: ['search', 'issues', 'q=', query],
     async queryFn({ signal }) {
       if (!query) return;
       const issuesByQuery = await fetchIssuesByQuery(query, { signal });
+      for (const issue of issuesByQuery.items) {
+        queryClient.setQueryData(['issues', issue.number], issue);
+      }
       return issuesByQuery;
     },
     enabled: !!query && query.length > 0,
@@ -74,32 +82,48 @@ export const useIssuesByQuery = (query: string | null) => {
 };
 
 // =============================================================================
-// useIssueAndComments
+// useIssue
 // =============================================================================
 
-const fetchIssue = async (issueId: string, opts?: RequestInit) => {
+const fetchIssue = async (issueId: number, opts?: RequestInit) => {
   const data: IIssue = await fetchWithError(`/api/issues/${issueId}`, opts);
   return data;
 };
 
-const fetchIssueComments = async (issueId: string, opts?: RequestInit) => {
+export const useIssue = (issueId?: number) => {
+  const queryClient = useQueryClient();
+  return useQuery({
+    queryKey: ['issues', issueId],
+    enabled: !!issueId,
+    async queryFn({ signal }) {
+      if (!issueId) throw new Error('You must provide an issue ID');
+      const issue = await fetchIssue(issueId, { signal });
+      return issue;
+    },
+    initialData() {
+      const issue: IIssue | undefined = queryClient.getQueryData(['issues', issueId]);
+      return issue;
+    },
+  });
+};
+
+// =============================================================================
+// useIssueComments
+// =============================================================================
+
+export const fetchIssueComments = async (issueId: number, opts?: RequestInit) => {
   const data: IComment[] = await fetchWithError(`/api/issues/${issueId}/comments`, opts);
   return data;
 };
 
-const fetchIssueAndComments = async (issueId: string, opts?: RequestInit) => {
-  const issueAndComments = await Promise.all([fetchIssue(issueId, opts), fetchIssueComments(issueId, opts)]);
-  return issueAndComments;
-};
-
-export const useIssueAndComments = (issueId?: string) => {
+export const useIssueComments = (issueId?: number) => {
   return useQuery({
     queryKey: ['issues', issueId, 'comments'],
+    enabled: !!issueId,
     async queryFn({ signal }) {
       if (!issueId) throw new Error('You must provide an issue ID');
-      const issueAndComments = await fetchIssueAndComments(issueId, { signal });
-      return issueAndComments;
+      const issue = await fetchIssueComments(issueId, { signal });
+      return issue;
     },
-    enabled: !!issueId,
   });
 };

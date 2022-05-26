@@ -8,7 +8,7 @@ import { fetchWithError } from '../utils';
 // useUser
 // =============================================================================
 
-const fetchUser = async (userId: string, opts?: RequestInit) => {
+export const fetchUser = async (userId: string, opts?: RequestInit) => {
   const data: IUser = await fetchWithError(`${'/api/users'}/${userId}`, opts);
   return data;
 };
@@ -23,6 +23,11 @@ const useUser = (userId?: string) => {
     },
     enabled: !!userId,
     staleTime: 1000 * 60 * 5, // 5 minutes
+    placeholderData: {
+      id: '',
+      profilePictureUrl: 'https://placekitten.com/g/22/22',
+      name: '',
+    },
   });
 };
 
