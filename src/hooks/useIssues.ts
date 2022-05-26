@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { useQuery, useQueryClient } from 'react-query';
+import { useQuery, useQueryClient, useMutation } from 'react-query';
+import { useNavigate } from 'react-router-dom';
 
 import { TLabel, TStatus, IIssue, IComment } from '../types';
 
@@ -131,6 +132,45 @@ export const useIssueComments = (issueId?: number) => {
       if (!issueId) throw new Error('You must provide an issue ID');
       const issue = await fetchIssueComments(issueId, { signal });
       return issue;
+    },
+  });
+};
+
+// =============================================================================
+// useCreateIssue
+// =============================================================================
+
+interface CreateIssueArgs {
+  title: string;
+  comment: string;
+}
+
+const createIssue = async (args: CreateIssueArgs) => {
+  const res = await fetch('/api/issues', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(args),
+  });
+  const data = res.json();
+  return data;
+};
+
+export const useCreateIssue = () => {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  return useMutation((args: CreateIssueArgs) => createIssue(args), {
+    onSuccess(issue: IIssue) {
+      console.log('here');
+      queryClient.invalidateQueries(['issues'], { exact: true });
+      queryClient.setQueryData(['issues', issue.number], issue);
+      navigate(`/issue/${issue.number}`);
+    },
+    onError(err) {
+      console.error(err);
+      navigate('/');
     },
   });
 };

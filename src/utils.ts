@@ -36,7 +36,7 @@ export const relativeDate = (date: string | number | Date): string => {
   }
 };
 
-export const fetchWithError = async (url: string, opts?: RequestInit) => {
+export const fetchWithError = async (url: string, opts?: any) => {
   const response = await fetch(url, opts);
 
   if (response.status !== 200) throw new Error('Error in request');
