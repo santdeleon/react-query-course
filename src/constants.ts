@@ -2,7 +2,7 @@
 // Colors
 // =============================================================================
 
-import { IStatus } from './types';
+import { IStatus, ILabel } from './types';
 
 export const RED = '#ff6363';
 export const ORANGE = '#fc9049';
@@ -36,4 +36,14 @@ export const DEFAULT_STATUSES: IStatus[] = [
   { id: 'inProgress', label: 'In Progress' },
   { id: 'done', label: 'Done' },
   { id: 'cancelled', label: 'Cancelled' },
+];
+
+export const DEFAULT_LABELS: ILabel[] = [
+  { id: 'bug', name: 'bug', color: RED },
+  { id: 'feature', name: 'feature', color: ORANGE },
+  { id: 'enhancement', name: 'enhancement', color: GREEN },
+  { id: 'question', name: 'question', color: YELLOW },
+  { id: 'help', name: 'help wanted', color: BLUE },
+  { id: 'wontfix', name: 'wontfix', color: PURPLE },
+  { id: 'duplicate', name: 'duplicate', color: PINK },
 ];

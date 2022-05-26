@@ -4,6 +4,8 @@ import { ILabel } from '../types';
 
 import { fetchWithError } from '../utils';
 
+import { DEFAULT_LABELS } from '../constants';
+
 // =============================================================================
 // useLabels
 // =============================================================================
@@ -20,6 +22,7 @@ const useLabels = () => {
       const labels = await fetchLabels();
       return labels;
     },
+    placeholderData: DEFAULT_LABELS,
     staleTime: Infinity,
   });
 };
