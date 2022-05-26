@@ -143,15 +143,13 @@ const IssueListItem = React.memo((props: IssueListItemProps) => {
   } = props;
 
   return (
-    <li>
+    <li onMouseEnter={onMouseEnter}>
       <StyledIssueListItem>
         <StatusBar status={status} />
         <Column padding="15px">
           {/* Title and Avatar */}
           <Row justify="space-between">
-            <Title to={`/issue/${number}`} onMouseEnter={onMouseEnter}>
-              {title}
-            </Title>
+            <Title to={`/issue/${number}`}>{title}</Title>
             {assigneeAvatar && (
               <AssigneeAvatar src={assigneeAvatar} alt={assigneeName || `Issue #${number}'s assignee`} />
             )}
