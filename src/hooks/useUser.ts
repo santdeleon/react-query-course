@@ -1,4 +1,4 @@
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 
 import { IUser } from '../types';
 
@@ -43,11 +43,15 @@ export const fetchMultipleUsers = async (userIds: string[], opts?: RequestInit) 
 };
 
 export const useMultipleUsers = (userIds?: string[]) => {
+  const queryClient = useQueryClient();
   return useQuery({
     queryKey: ['users', userIds],
     async queryFn({ signal }) {
-      if (!userIds) throw new Error('You must provide user IDs');
+      if (!userIds || userIds.length <= 0) throw new Error('You must provide user IDs');
       const users = await fetchMultipleUsers(userIds, { signal });
+      for (const user of users) {
+        queryClient.setQueryData(['users', user.id], user);
+      }
       return users;
     },
     enabled: !!userIds,

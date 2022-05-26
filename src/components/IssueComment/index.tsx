@@ -3,7 +3,6 @@ import styled from 'styled-components';
 
 import Row from '../Row';
 import Column from '../Column';
-import { hexToRGB } from '../../utils';
 
 // =============================================================================
 // Typedefs
@@ -55,7 +54,7 @@ const IssueCommentCardBody = styled(Row)`
 
 interface IssueCommentProps {
   avatar?: string;
-  createdBy: string;
+  createdByName: string;
   createdDate: string;
   comment: string;
 }
@@ -65,14 +64,14 @@ interface IssueCommentProps {
 // =============================================================================
 
 const IssueComment = React.memo((props: IssueCommentProps) => {
-  const { avatar, createdBy, createdDate, comment } = props;
+  const { avatar, createdByName, createdDate, comment } = props;
 
   return (
     <StyledIssueComment>
-      {avatar && <Avatar src={avatar} alt={createdBy} />}
+      {avatar && <Avatar src={avatar} alt={createdByName} />}
       <IssueCommentCard>
         <IssueCommentCardHeader>
-          <Name>{createdBy}</Name> commented {createdDate}
+          <Name>{createdByName}</Name> commented {createdDate}
         </IssueCommentCardHeader>
         <IssueCommentCardBody>{comment}</IssueCommentCardBody>
       </IssueCommentCard>

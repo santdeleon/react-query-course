@@ -6,7 +6,7 @@ import { IIssue, IUser } from '../../types';
 
 import { relativeDate } from '../../utils';
 
-import { fetchIssueComments, fetchMultipleUsers } from '../../hooks';
+import { fetchIssueComments } from '../../hooks';
 
 import { RED } from '../../constants';
 
@@ -77,14 +77,6 @@ const IssueList = React.memo((props: IssueListProps) => {
           });
         };
 
-        const prefetchIssueUsers = async () => {
-          const ids: string[] = [];
-
-          if (assignee?.id) ids.push(assignee.id);
-          if (createdBy?.id) ids.push(createdBy.id);
-          if (ids.length > 0) await queryClient.prefetchQuery(['users', ids], async () => fetchMultipleUsers(ids));
-        };
-
         return (
           <IssueListItem
             key={issue.id}
@@ -97,10 +89,7 @@ const IssueList = React.memo((props: IssueListProps) => {
             assigneeName={assignee?.name}
             assigneeAvatar={assignee?.profilePictureUrl}
             createdByName={createdBy?.name}
-            onMouseEnter={() => {
-              prefetchIssueComments();
-              prefetchIssueUsers();
-            }}
+            onMouseEnter={prefetchIssueComments}
           />
         );
       })}

@@ -78,7 +78,7 @@ interface IssueDetailsProps {
   number?: string;
   title: string;
   status: TStatus;
-  createdBy: string;
+  createdByName: string;
   createdDate: string;
   commentsLength: number;
 }
@@ -98,7 +98,7 @@ const IssueDetails = React.memo((props: IssueDetailsProps) => {
       </Row>
       <Title>{props.title}</Title>
       <Subtitle>
-        <span>{props.createdBy}</span> opened this issue {props.createdDate} · {props.commentsLength} comments
+        <span>{props.createdByName}</span> opened this issue {props.createdDate} · {props.commentsLength} comments
       </Subtitle>
     </Column>
   );

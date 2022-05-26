@@ -1,8 +1,9 @@
 import React, { useMemo } from 'react';
-import styled from 'styled-components';
+import { QueryClient, useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
+import styled from 'styled-components';
 
-import { relativeDate, capitalizeFirstLetter } from '../utils';
+import { relativeDate } from '../utils';
 
 import { IComment, IIssue, IUser } from '../types';
 
@@ -45,6 +46,7 @@ type UserIDToUser = Map<string, IUser>;
 
 interface IssueProps {
   data: {
+    queryClient: QueryClient;
     number?: string;
     issue?: IIssue;
     comments?: IComment[];
@@ -64,6 +66,9 @@ const useIssueProps = () => {
   const { number } = useParams();
   const numberAsNum = number ? parseFloat(number) : undefined;
 
+  // grab query client
+  const queryClient = useQueryClient();
+
   // fetch issue
   const issueQuery = useIssue(numberAsNum);
   const issue = issueQuery.data;
@@ -82,6 +87,7 @@ const useIssueProps = () => {
 
   return {
     data: {
+      queryClient,
       number,
       issue,
       comments,
@@ -100,7 +106,10 @@ const useIssueProps = () => {
 
 const StatelessIssue = React.memo((props: IssueProps) => {
   const { data, loading, issueError, commentsError } = props;
-  const { number, issue, userIDToUser, comments } = data;
+  const { queryClient, number, issue, userIDToUser, comments } = data;
+  const issueCreator: IUser | undefined = issue
+    ? queryClient.getQueryData(['users', issue.createdBy]) || userIDToUser.get(issue.createdBy)
+    : undefined;
 
   return (
     <>
@@ -114,7 +123,7 @@ const StatelessIssue = React.memo((props: IssueProps) => {
             number={number}
             title={issue.title}
             status={issue.status}
-            createdBy={userIDToUser.get(issue.createdBy)?.name || issue.createdBy}
+            createdByName={issueCreator?.name || issue.createdBy}
             createdDate={relativeDate(issue.createdDate)}
             commentsLength={issue.comments.length}
           />
@@ -128,15 +137,19 @@ const StatelessIssue = React.memo((props: IssueProps) => {
         ) : (
           comments && (
             <>
-              {comments.map((comment) => (
-                <IssueComment
-                  key={comment.id}
-                  avatar={userIDToUser.get(comment.createdBy)?.profilePictureUrl}
-                  createdBy={userIDToUser.get(comment.createdBy)?.name || comment.createdBy}
-                  createdDate={relativeDate(comment.createdDate)}
-                  comment={comment.comment}
-                />
-              ))}
+              {comments.map((comment) => {
+                const commentCreator: IUser | undefined =
+                  queryClient.getQueryData(['users', comment.createdBy]) || userIDToUser.get(comment.createdBy);
+                return (
+                  <IssueComment
+                    key={comment.id}
+                    avatar={commentCreator?.profilePictureUrl}
+                    createdByName={commentCreator?.name || comment.createdBy}
+                    createdDate={relativeDate(comment.createdDate)}
+                    comment={comment.comment}
+                  />
+                );
+              })}
             </>
           )
         )}
