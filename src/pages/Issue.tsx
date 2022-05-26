@@ -29,7 +29,7 @@ const Header = styled(Column).attrs({
 
 const Body = styled(Column).attrs({})`
   padding: 20px;
-  background-color: #fff;
+  background-color: ghostwhite;
   border-radius: 0 0 14px 14px;
 `;
 

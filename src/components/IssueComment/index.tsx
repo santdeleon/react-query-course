@@ -33,7 +33,7 @@ const IssueCommentCardHeader = styled(Row).attrs({
   align: 'center',
 })`
   padding: 8px;
-  background-color: ghostwhite;
+  background-color: #f7f4f4;
   border-bottom: 1px solid #e8e8e8;
   border-radius: 4px 4px 0 0;
 `;
@@ -46,6 +46,8 @@ const Name = styled.span`
 
 const IssueCommentCardBody = styled(Row)`
   padding: 8px;
+  background-color: #fff;
+  border-radius: 0 0 4px 4px;
 `;
 
 // =============================================================================
