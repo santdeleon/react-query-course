@@ -11,6 +11,26 @@ const PLACEHOLDER_USER = {
 };
 
 // =============================================================================
+// useUsers
+// =============================================================================
+
+const fetchUsers = async (opts?: RequestInit) => {
+  const data: IUser[] = await fetchWithError('/api/users', opts);
+  return data;
+};
+
+export const useUsers = () => {
+  return useQuery({
+    queryKey: ['users'],
+    async queryFn({ signal }) {
+      const user = await fetchUsers({ signal });
+      return user;
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+};
+
+// =============================================================================
 // useUser
 // =============================================================================
 

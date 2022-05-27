@@ -101,20 +101,14 @@ const StyledButton = styled.button`
 `;
 
 // =============================================================================
-// Constants
-// =============================================================================
-
-const DEFAULT_FORM_STATE = {
-  title: '',
-  comment: '',
-};
-
-// =============================================================================
 // Main Component
 // =============================================================================
 
 const AddIssue = () => {
-  const [formState, setFormState] = useState(DEFAULT_FORM_STATE);
+  const [formState, setFormState] = useState({
+    title: '',
+    comment: '',
+  });
 
   const { mutate: createIssue, isLoading } = useCreateIssue();
 
@@ -125,10 +119,6 @@ const AddIssue = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!formState.title || !formState.comment) {
-      console.error('An issue title and comment must be provided');
-      return;
-    }
     createIssue(formState);
   };
 
@@ -143,8 +133,8 @@ const AddIssue = () => {
             <Label htmlFor="title">Title</Label>
             <Input
               type="text"
-              id="title"
               name="title"
+              required
               placeholder="Enter a title..."
               value={formState.title}
               onChange={handleChange}
@@ -154,8 +144,8 @@ const AddIssue = () => {
             <Label htmlFor="comment">Comment</Label>
             <Input
               type="text"
-              id="comment"
               name="comment"
+              required
               placeholder="Enter some text..."
               value={formState.comment}
               onChange={handleChange}

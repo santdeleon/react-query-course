@@ -30,7 +30,7 @@ const useLabels = () => {
 export default useLabels;
 
 // =============================================================================
-// useMutateIssueLabels
+// useUpdateIssueLabels
 // =============================================================================
 
 interface UseMutateIssueLabelsArgs {
@@ -44,20 +44,20 @@ const updateLabels = async (args: UseMutateIssueLabelsArgs) => {
     headers: {
       'content-type': 'application/json',
     },
-    body: JSON.stringify({ ...args }),
+    body: JSON.stringify(args),
   });
   const data = res.json();
   return data;
 };
 
-export const useMutateIssueLabels = (args: UseMutateIssueLabelsArgs) => {
+export const useUpdateIssueLabels = () => {
   const queryClient = useQueryClient();
-  return useMutation(() => updateLabels(args), {
+  return useMutation((args: UseMutateIssueLabelsArgs) => updateLabels(args), {
     onSuccess(data) {
-      queryClient.setQueryData(['issues', args.issueId], data);
+      // queryClient.setQueryData(['issues', args.issueId], data);
     },
     onSettled() {
-      queryClient.invalidateQueries(['issues', args.issueId], { exact: true });
+      // queryClient.invalidateQueries(['issues', args.issueId], { exact: true });
     },
   });
 };

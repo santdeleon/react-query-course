@@ -6,12 +6,15 @@ import { TLabel, TStatus, IIssue, ILabel, IUser } from '../types';
 
 import { useIssues, useIssuesByQuery, useLabels, useMultipleUsers } from '../hooks';
 
+import { RED } from '../constants';
+
 import IssueList from '../components/IssueList';
 import Row from '../components/Row';
 import Column from '../components/Column';
 import LabelList from '../components/LabelList';
 import StatusSelect from '../components/StatusSelect';
 import Spinner from '../components/Spinner';
+import SkeletonLoader from '../components/SkeletonLoader';
 
 // =============================================================================
 // Styled Components
@@ -95,6 +98,21 @@ const Footer = styled(Row).attrs({
   background-color: #fff;
 `;
 
+const UnorderedList = styled.ul`
+  display: flex;
+  flex-direction: column;
+  li {
+    &:not(:last-child) {
+      margin-bottom: 20px;
+    }
+  }
+`;
+
+const ErrorMessage = styled.p`
+  margin: 0;
+  color: ${RED};
+`;
+
 const PaginationButton = styled.button<{ margin?: string }>`
   position: relative;
   cursor: pointer;
@@ -158,8 +176,7 @@ interface HomeProps {
   };
   loading: boolean;
   fetching: boolean;
-  labelsError: unknown;
-  issuesError: unknown;
+  error: unknown;
 }
 
 // =============================================================================
@@ -176,7 +193,12 @@ const useHomeProps = () => {
   const labels = labelsQuery.data ?? [];
 
   // fetch issues
-  // sort to prevent redundant calls to the same data based on label position in api call
+  /**
+   * sort to prevent redundant calls to the same data based on label position in api call
+   * Example:
+   * fetch(/api/issues?labels=["bug", "question"]) returns the same data as -> fetch(/api/issues?labels=["question", "bug"])
+   * but they make 2 API calls and thus send the app into loading for no reason
+   */
   const issuesQuery = useIssues({ labels: [...labelFilters].sort(), status });
   const issues = issuesQuery.data ?? [];
 
@@ -228,8 +250,7 @@ const useHomeProps = () => {
       (searchedIssuesQuery.fetchStatus !== 'idle' && searchedIssuesQuery.isLoading) ||
       (usersQuery.fetchStatus !== 'idle' && usersQuery.isLoading),
     fetching: issuesQuery.isFetching || searchedIssuesQuery.isFetching || usersQuery.isFetching,
-    labelsError: labelsQuery.error,
-    issuesError: issuesQuery.error,
+    error: issuesQuery.error,
   };
 };
 
@@ -237,45 +258,50 @@ const useHomeProps = () => {
 // Main Component
 // =============================================================================
 
-const StatelessHome = React.memo((props: HomeProps) => (
-  <>
-    <CreateIssueButton>+</CreateIssueButton>
-    <Header>
-      <Row align="center" justify="space-between" margin="0 0 10px 0">
-        <Row>
-          <Title>Issues</Title>
-          <StatusSelect status={props.data.status} handleChange={props.data.handleStatusSelect} />
+const StatelessHome = React.memo((props: HomeProps) => {
+  const { data, loading, fetching, error } = props;
+
+  return (
+    <>
+      <CreateIssueButton>+</CreateIssueButton>
+      <Header>
+        <Row align="center" justify="space-between" margin="0 0 10px 0">
+          <Row>
+            <Title>Issues</Title>
+            <StatusSelect status={data.status} handleChange={data.handleStatusSelect} />
+          </Row>
+          {!loading && fetching && <Spinner />}
         </Row>
-        {!props.loading && props.fetching && <Spinner />}
-      </Row>
-      <LabelList
-        data={{
-          labels: props.data.labels,
-          labelFilters: props.data.labelFilters,
-          toggleLabelFilter: props.data.toggleLabelFilter,
-        }}
-      />
-    </Header>
-    <Body isLoading={props.loading}>
-      <IssueList
-        data={{
-          issues: props.data.issues,
-          userIDToUser: props.data.userIDToUser,
-        }}
-        loading={props.loading}
-        error={props.issuesError}
-      />
-    </Body>
-    {!props.loading && (
-      // TODO: Hook these up to pagination
-      <Footer>
-        <PaginationButton margin="0 25px 0 0">Previous</PaginationButton>
-        <span>Page 1</span>
-        <PaginationButton margin="0 0 0 25px">Next</PaginationButton>
-      </Footer>
-    )}
-  </>
-));
+        <LabelList labels={data.labels} labelFilters={data.labelFilters} toggleLabelFilter={data.toggleLabelFilter} />
+      </Header>
+      <Body isLoading={loading}>
+        {loading ? (
+          <UnorderedList>
+            {[1, 2, 3, 4].map((n) => (
+              <li key={n}>
+                <SkeletonLoader width="100%" height="100px" borderRadius="6px" backgroundColor="#FFF" />
+              </li>
+            ))}
+          </UnorderedList>
+        ) : error ? (
+          <ErrorMessage>Failed to fetch issues</ErrorMessage>
+        ) : data.issues.length > 0 ? (
+          <IssueList issues={data.issues} userIDToUser={data.userIDToUser} />
+        ) : (
+          <div>No issues...</div>
+        )}
+      </Body>
+      {!loading && (
+        // TODO: Hook these up to pagination
+        <Footer>
+          <PaginationButton margin="0 25px 0 0">Previous</PaginationButton>
+          <span>Page 1</span>
+          <PaginationButton margin="0 0 0 25px">Next</PaginationButton>
+        </Footer>
+      )}
+    </>
+  );
+});
 
 // =============================================================================
 // Home

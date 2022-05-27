@@ -24,11 +24,9 @@ const UnorderedList = styled.ul`
 // =============================================================================
 
 interface LabelListProps {
-  data: {
-    labels: ILabel[];
-    labelFilters: Set<TLabel>;
-    toggleLabelFilter: (label: TLabel) => void;
-  };
+  labels: ILabel[];
+  labelFilters: Set<TLabel>;
+  toggleLabelFilter: (label: TLabel) => void;
 }
 
 // =============================================================================
@@ -37,12 +35,12 @@ interface LabelListProps {
 
 const LabelList = React.memo((props: LabelListProps) => (
   <UnorderedList>
-    {props.data.labels.map((label) => (
+    {props.labels.map((label) => (
       <LabelListItem
         key={label.id}
         label={label.id}
-        isActive={props.data.labelFilters.has(label.id)}
-        onClick={() => props.data.toggleLabelFilter(label.id)}
+        isActive={props.labelFilters.has(label.id)}
+        onClick={() => props.toggleLabelFilter(label.id)}
       >
         {label.name}
       </LabelListItem>

@@ -44,7 +44,7 @@ const StatusSelect = React.memo((props: StatusSelectProps) => {
   return (
     <form>
       <Select value={status} onChange={handleChange}>
-        <option value="default">Choose a status</option>
+        <option value="default">Choose an option</option>
         {DEFAULT_STATUSES.map(({ id, label }) => (
           <option key={id} id={label} value={id}>
             {label}

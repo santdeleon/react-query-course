@@ -8,19 +8,19 @@ import Column from '../Column';
 // Typedefs
 // =============================================================================
 
-const StyledIssueComment = styled(Row).attrs({
-  align: 'center',
-  margin: ' 0 0 15px 0',
-})``;
+const ListItem = styled.li`
+  display: flex;
+  align-items: center;
+`;
 
-const Avatar = styled.img`
-  width: 30px;
-  height: 30px;
+const Avatar = styled.img.attrs({
+  width: 36,
+})`
   border-radius: 50%;
   margin-right: 10px;
 `;
 
-const IssueCommentCard = styled(Column).attrs({
+const Card = styled(Column).attrs({
   justify: 'center',
 })`
   border: 2px solid #e8e8e8;
@@ -29,7 +29,7 @@ const IssueCommentCard = styled(Column).attrs({
   max-width: 300px;
 `;
 
-const IssueCommentCardHeader = styled(Row).attrs({
+const CardHeader = styled(Row).attrs({
   align: 'center',
 })`
   padding: 8px;
@@ -38,23 +38,23 @@ const IssueCommentCardHeader = styled(Row).attrs({
   border-radius: 4px 4px 0 0;
 `;
 
+const CardBody = styled(Row)`
+  padding: 8px;
+  background-color: #fff;
+  border-radius: 0 0 4px 4px;
+`;
+
 const Name = styled.span`
   color: #000;
   font-weight: 500;
   margin-right: 3px;
 `;
 
-const IssueCommentCardBody = styled(Row)`
-  padding: 8px;
-  background-color: #fff;
-  border-radius: 0 0 4px 4px;
-`;
-
 // =============================================================================
 // Typedefs
 // =============================================================================
 
-interface IssueCommentProps {
+interface IssueCommentListItemProps {
   avatar: string;
   createdByName: string;
   createdDate: string;
@@ -65,20 +65,20 @@ interface IssueCommentProps {
 // Main Component
 // =============================================================================
 
-const IssueComment = React.memo((props: IssueCommentProps) => {
+const IssueCommentListItem = React.memo((props: IssueCommentListItemProps) => {
   const { avatar, createdByName, createdDate, comment } = props;
 
   return (
-    <StyledIssueComment>
+    <ListItem>
       <Avatar src={avatar} alt={createdByName} />
-      <IssueCommentCard>
-        <IssueCommentCardHeader>
+      <Card>
+        <CardHeader>
           <Name>{createdByName}</Name> commented {createdDate}
-        </IssueCommentCardHeader>
-        <IssueCommentCardBody>{comment}</IssueCommentCardBody>
-      </IssueCommentCard>
-    </StyledIssueComment>
+        </CardHeader>
+        <CardBody>{comment}</CardBody>
+      </Card>
+    </ListItem>
   );
 });
 
-export default IssueComment;
+export default IssueCommentListItem;

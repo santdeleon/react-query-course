@@ -44,7 +44,6 @@ const StatusBar = styled.div<{ status: TStatus }>`
         return hexToRGB(GREEN, 0.5);
       case 'cancelled':
         return hexToRGB(RED, 0.5);
-      // handle undefined case
       default:
         return hexToRGB(GRAY, 0.5);
     }

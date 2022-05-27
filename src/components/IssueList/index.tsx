@@ -8,17 +8,13 @@ import { relativeDate } from '../../utils';
 
 import { fetchIssueComments } from '../../hooks';
 
-import { RED } from '../../constants';
-
-import SkeletonLoader from '../../components/SkeletonLoader';
-
 import IssueListItem from './IssueListItem';
 
 // =============================================================================
 // Styled Components
 // =============================================================================
 
-const List = styled.ul`
+const UnorderedList = styled.ul`
   display: flex;
   flex-direction: column;
   li {
@@ -28,11 +24,6 @@ const List = styled.ul`
   }
 `;
 
-const ErrorMessage = styled.p`
-  margin: 0;
-  color: ${RED};
-`;
-
 // =============================================================================
 // Typedefs
 // =============================================================================
@@ -40,12 +31,8 @@ const ErrorMessage = styled.p`
 type UserIDToUser = Map<string, IUser>;
 
 interface IssueListProps {
-  data: {
-    issues: IIssue[];
-    userIDToUser: UserIDToUser;
-  };
-  loading: boolean;
-  error: unknown;
+  issues: IIssue[];
+  userIDToUser: UserIDToUser;
 }
 
 // =============================================================================
@@ -53,23 +40,14 @@ interface IssueListProps {
 // =============================================================================
 
 const IssueList = React.memo((props: IssueListProps) => {
+  const { issues, userIDToUser } = props;
   const queryClient = useQueryClient();
 
-  return props.loading ? (
-    <List>
-      {[1, 2, 3, 4].map((n) => (
-        <li key={n}>
-          <SkeletonLoader width="100%" height="100px" borderRadius="6px" backgroundColor="#FFF" />
-        </li>
-      ))}
-    </List>
-  ) : props.error ? (
-    <ErrorMessage>Failed to fetch issues</ErrorMessage>
-  ) : props.data.issues.length > 0 ? (
-    <List>
-      {props.data.issues.map((issue) => {
-        const assignee = props.data.userIDToUser.get(issue.assignee);
-        const createdBy = props.data.userIDToUser.get(issue.createdBy);
+  return (
+    <UnorderedList>
+      {issues.map((issue) => {
+        const assignee = userIDToUser.get(issue.assignee);
+        const createdBy = userIDToUser.get(issue.createdBy);
 
         const prefetchIssueComments = async () => {
           await queryClient.prefetchQuery(['issues', issue.number, 'comments'], async () => {
@@ -93,9 +71,7 @@ const IssueList = React.memo((props: IssueListProps) => {
           />
         );
       })}
-    </List>
-  ) : (
-    <div>No issues...</div>
+    </UnorderedList>
   );
 });
 

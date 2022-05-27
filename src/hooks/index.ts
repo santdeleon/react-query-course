@@ -5,6 +5,8 @@ export {
   useIssueComments,
   fetchIssueComments,
   useCreateIssue,
+  useUpdateIssue,
 } from './useIssues';
-export { default as useLabels, useMutateIssueLabels } from './useLabels';
-export { default as useUser, fetchUser, useMultipleUsers, fetchMultipleUsers } from './useUser';
+export type { UpdateIssueArgs } from './useIssues';
+export { default as useLabels, useUpdateIssueLabels } from './useLabels';
+export { default as useUser, useUsers, fetchUser, useMultipleUsers, fetchMultipleUsers } from './useUser';
