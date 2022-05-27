@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { useQuery, useQueryClient, useMutation } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,43 +11,42 @@ import { fetchWithError } from '../utils';
 // useIssues
 // =============================================================================
 
+const ISSUES_PER_PAGE = 4;
+
 interface FetchIssuesArgs {
+  page: number;
   labels?: TLabel[];
   status?: TStatus | 'default';
 }
 
-const fetchIssues = async (args?: FetchIssuesArgs, opts?: RequestInit) => {
-  const labels = args?.labels;
+export const fetchIssues = async (args: FetchIssuesArgs, opts?: RequestInit) => {
+  const labels = args.labels;
   const hasLabels = labels && labels.length > 0;
   const status = args?.status;
-  let url = '/api/issues?';
+  let url = `/api/issues?limit=${ISSUES_PER_PAGE}&page=${args.page}`;
 
   // apply label filters
   if (hasLabels) {
     const labelString = labels.map((l) => `labels[]=${l}`).join('&');
-    url += `${labelString}`;
+    url += `&${labelString}`;
   }
 
   // apply status filter
   if (status && status !== 'default') {
-    const statusString = `${hasLabels ? '&' : ''}status=${status}`;
+    const statusString = `&status=${status}`;
     url += statusString;
   }
+
+  console.log(url);
 
   const data: IIssue[] = await fetchWithError(url, opts);
   return data;
 };
 
-const useIssues = (args?: FetchIssuesArgs) => {
+const useIssues = (args: FetchIssuesArgs) => {
   const queryClient = useQueryClient();
-  const queryKey = useMemo(() => {
-    const queryKey: any[] = ['issues'];
-    if (args?.labels && args.labels.length > 0) queryKey.push('labels', args.labels);
-    if (args?.status && args.status !== 'default') queryKey.push('status', args.status);
-    return queryKey;
-  }, [args]);
   return useQuery({
-    queryKey,
+    queryKey: ['issues', args],
     async queryFn({ signal }) {
       const issues = await fetchIssues(args, { signal });
       for (const issue of issues) {
@@ -56,6 +54,7 @@ const useIssues = (args?: FetchIssuesArgs) => {
       }
       return issues;
     },
+    keepPreviousData: true,
   });
 };
 
@@ -88,6 +87,7 @@ export const useIssuesByQuery = (query: string | null) => {
       return issuesByQuery;
     },
     enabled: !!query && query.length > 0,
+    keepPreviousData: true,
   });
 };
 

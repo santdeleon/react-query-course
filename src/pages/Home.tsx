@@ -1,10 +1,12 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { useQueryClient } from 'react-query';
+
 import { Link, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { TLabel, TStatus, IIssue, ILabel, IUser } from '../types';
 
-import { useIssues, useIssuesByQuery, useLabels, useMultipleUsers } from '../hooks';
+import { useIssues, fetchIssues, useIssuesByQuery, useLabels, useUsers } from '../hooks';
 
 import { RED } from '../constants';
 
@@ -138,6 +140,8 @@ const PaginationButton = styled.button<{ margin?: string }>`
   -webkit-user-select: none;
   -moz-user-select: none;
   transform: translateY(0);
+  opacity: ${(props) => (props.disabled ? '0.5' : '1')};
+  pointer-events: ${(props) => (props.disabled ? 'none' : 'default')};
   &:hover {
     background-color: #d660c8;
     border-color: #bc47af;
@@ -166,24 +170,35 @@ type UserIDToUser = Map<string, IUser>;
 
 interface HomeProps {
   data: {
+    isPreviousData: boolean;
     labels: ILabel[];
     labelFilters: LabelFilters;
     status: StatusFilter;
     issues: IIssue[];
     userIDToUser: UserIDToUser;
+    page: number;
+    changePage: (action: 'prev' | 'next') => void;
     toggleLabelFilter: (label: TLabel) => void;
     handleStatusSelect: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   };
-  loading: boolean;
-  fetching: boolean;
+  isLoadingIssues: boolean;
+  isLoadingUsers: boolean;
+  isFetchingIssues: boolean;
   error: unknown;
 }
+
+// =============================================================================
+// Constants
+// =============================================================================
 
 // =============================================================================
 // Hooks
 // =============================================================================
 
 const useHomeProps = () => {
+  const queryClient = useQueryClient();
+  const [page, setPage] = useState(1);
+
   // setup filters
   const [labelFilters, setLabelFilters] = useState<LabelFilters>(new Set());
   const [status, setStatus] = useState<StatusFilter>('default');
@@ -199,7 +214,7 @@ const useHomeProps = () => {
    * fetch(/api/issues?labels=["bug", "question"]) returns the same data as -> fetch(/api/issues?labels=["question", "bug"])
    * but they make 2 API calls and thus send the app into loading for no reason
    */
-  const issuesQuery = useIssues({ labels: [...labelFilters].sort(), status });
+  const issuesQuery = useIssues({ page, labels: [...labelFilters].sort(), status });
   const issues = issuesQuery.data ?? [];
 
   // check for a search query
@@ -211,45 +226,71 @@ const useHomeProps = () => {
   const issuesByQuery = searchedIssuesQuery.data;
 
   const result = searchQuery ? issuesByQuery?.items ?? [] : issues;
-  const resultUsers =
-    searchQuery && issuesByQuery
-      ? [...new Set(issuesByQuery.items.flatMap((item) => [item.assignee, item.createdBy]))]
-      : [...new Set(issues.flatMap((r) => [r.assignee, r.createdBy]))];
 
-  // fetch and format user data
-  const usersQuery = useMultipleUsers(resultUsers.filter(Boolean));
+  // fetch all users
+  const usersQuery = useUsers();
   const users = usersQuery.data ?? [];
   const userIDToUser = useMemo(() => new Map(users.map((user) => [user.id, user])), [users]);
 
+  const changePage = useCallback(
+    (action: 'prev' | 'next') => {
+      const prevPage = page;
+      if (action === 'prev') {
+        if (page - 1 > 0) {
+          setPage(prevPage - 1);
+        }
+      } else {
+        if (result.length !== 0) {
+          setPage(prevPage + 1);
+        }
+      }
+    },
+    [page, setPage, result],
+  );
+
   const toggleLabelFilter = useCallback(
     (label: TLabel) => {
+      setPage(1);
       labelFilters.has(label) ? labelFilters.delete(label) : labelFilters.add(label);
       setLabelFilters(new Set(labelFilters));
       if (searchParams) setSearchParams({});
     },
-    [labelFilters, setLabelFilters],
+    [labelFilters, setLabelFilters, setPage],
   );
 
   const handleStatusSelect = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => setStatus(e.currentTarget.value as TStatus),
-    [setStatus],
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setPage(1);
+      setStatus(e.currentTarget.value as TStatus);
+    },
+    [setPage, setStatus],
   );
+
+  useEffect(() => {
+    const nextPage = page + 1;
+    queryClient.prefetchQuery(['issues', { page: nextPage, labels: [...labelFilters], status }], () =>
+      fetchIssues({ page: nextPage, labels: [...labelFilters], status }),
+    );
+  }, [queryClient, page, labelFilters, status]);
 
   return {
     data: {
+      isPreviousData: issuesQuery.isPreviousData || searchedIssuesQuery.isPreviousData,
       labels,
       labelFilters,
       status,
       issues: result,
       userIDToUser,
+      page,
+      changePage,
       toggleLabelFilter,
       handleStatusSelect,
     },
-    loading:
+    isLoadingIssues:
       (issuesQuery.fetchStatus !== 'idle' && issuesQuery.isLoading) ||
-      (searchedIssuesQuery.fetchStatus !== 'idle' && searchedIssuesQuery.isLoading) ||
-      (usersQuery.fetchStatus !== 'idle' && usersQuery.isLoading),
-    fetching: issuesQuery.isFetching || searchedIssuesQuery.isFetching || usersQuery.isFetching,
+      (searchedIssuesQuery.fetchStatus !== 'idle' && searchedIssuesQuery.isLoading),
+    isLoadingUsers: usersQuery.fetchStatus !== 'idle' && usersQuery.isLoading,
+    isFetchingIssues: issuesQuery.isFetching || searchedIssuesQuery.isFetching,
     error: issuesQuery.error,
   };
 };
@@ -259,7 +300,8 @@ const useHomeProps = () => {
 // =============================================================================
 
 const StatelessHome = React.memo((props: HomeProps) => {
-  const { data, loading, fetching, error } = props;
+  const { data, isLoadingIssues, isLoadingUsers, isFetchingIssues, error } = props;
+  const isLoadingIssuesAndUsers = isLoadingIssues || isLoadingUsers;
 
   return (
     <>
@@ -270,12 +312,12 @@ const StatelessHome = React.memo((props: HomeProps) => {
             <Title>Issues</Title>
             <StatusSelect status={data.status} handleChange={data.handleStatusSelect} />
           </Row>
-          {!loading && fetching && <Spinner />}
+          {!isLoadingIssuesAndUsers && isFetchingIssues && <Spinner />}
         </Row>
         <LabelList labels={data.labels} labelFilters={data.labelFilters} toggleLabelFilter={data.toggleLabelFilter} />
       </Header>
-      <Body isLoading={loading}>
-        {loading ? (
+      <Body isLoading={isLoadingIssuesAndUsers}>
+        {isLoadingIssuesAndUsers ? (
           <UnorderedList>
             {[1, 2, 3, 4].map((n) => (
               <li key={n}>
@@ -291,12 +333,19 @@ const StatelessHome = React.memo((props: HomeProps) => {
           <div>No issues...</div>
         )}
       </Body>
-      {!loading && (
-        // TODO: Hook these up to pagination
+      {!isLoadingIssuesAndUsers && (
         <Footer>
-          <PaginationButton margin="0 25px 0 0">Previous</PaginationButton>
-          <span>Page 1</span>
-          <PaginationButton margin="0 0 0 25px">Next</PaginationButton>
+          <PaginationButton margin="0 25px 0 0" onClick={() => data.changePage('prev')} disabled={data.page === 1}>
+            Previous
+          </PaginationButton>
+          <span>Page {data.page}</span>
+          <PaginationButton
+            margin="0 0 0 25px"
+            onClick={() => data.changePage('next')}
+            disabled={data.issues.length === 0 || data.isPreviousData}
+          >
+            Next
+          </PaginationButton>
         </Footer>
       )}
     </>

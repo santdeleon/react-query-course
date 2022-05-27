@@ -1,5 +1,6 @@
 export {
   default as useIssues,
+  fetchIssues,
   useIssuesByQuery,
   useIssue,
   useIssueComments,
