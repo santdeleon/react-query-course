@@ -1,4 +1,4 @@
-import { useQueryClient, useQuery, useMutation } from 'react-query';
+import { useQuery } from 'react-query';
 
 import { ILabel } from '../types';
 
@@ -28,36 +28,3 @@ const useLabels = () => {
 };
 
 export default useLabels;
-
-// =============================================================================
-// useUpdateIssueLabels
-// =============================================================================
-
-interface UseMutateIssueLabelsArgs {
-  issueId: number;
-  labels: ILabel[];
-}
-
-const updateLabels = async (args: UseMutateIssueLabelsArgs) => {
-  const res = await fetch('/api/labels', {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify(args),
-  });
-  const data = res.json();
-  return data;
-};
-
-export const useUpdateIssueLabels = () => {
-  const queryClient = useQueryClient();
-  return useMutation((args: UseMutateIssueLabelsArgs) => updateLabels(args), {
-    onSuccess(data) {
-      // queryClient.setQueryData(['issues', args.issueId], data);
-    },
-    onSettled() {
-      // queryClient.invalidateQueries(['issues', args.issueId], { exact: true });
-    },
-  });
-};

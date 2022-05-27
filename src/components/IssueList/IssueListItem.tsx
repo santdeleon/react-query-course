@@ -166,7 +166,7 @@ const IssueListItem = React.memo((props: IssueListItemProps) => {
           {/* Labels */}
           <Row align="center">
             {labels.map((label) => (
-              <Badge key={label} label={label} isActive>
+              <Badge key={label} label={label} isActive margin="0 10px 0 0">
                 {label}
               </Badge>
             ))}

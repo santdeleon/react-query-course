@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import { useQueryClient } from 'react-query';
+import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 
 import Searchbar from '../Searchbar';
@@ -36,18 +37,30 @@ const NavbarBrand = styled(Link).attrs({
 // Main Component
 // =============================================================================
 
-const Navbar = () => (
-  <StyledNavbar>
-    <nav>
-      <NavbarBrand>
-        <span role="img" aria-label="Sparkles Emoji">
-          ✨
-        </span>{' '}
-        Issue Tracker
-      </NavbarBrand>
-    </nav>
-    <Searchbar />
-  </StyledNavbar>
-);
+const Navbar = () => {
+  const location = useLocation();
+  const queryClient = useQueryClient();
+
+  return (
+    <StyledNavbar>
+      <nav>
+        <NavbarBrand
+          onClick={() => {
+            // little hacky but will allow issues to reflect updates from issue page
+            if (location.pathname !== '/') {
+              queryClient.invalidateQueries(['issues']);
+            }
+          }}
+        >
+          <span role="img" aria-label="Sparkles Emoji">
+            ✨
+          </span>{' '}
+          Issue Tracker
+        </NavbarBrand>
+      </nav>
+      <Searchbar />
+    </StyledNavbar>
+  );
+};
 
 export default Navbar;
