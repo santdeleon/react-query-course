@@ -5,11 +5,11 @@ import styled from 'styled-components';
 
 import { relativeDate, hexToRGB } from '../utils';
 
-import { IComment, IIssue, IUser, TLabel, TStatus } from '../types';
+import { IComment, IIssue, IUser, TLabel, ILabel, TStatus } from '../types';
 
-import { useIssue, useIssueComments, useUpdateIssue, UpdateIssueArgs, useUsers } from '../hooks';
+import { useIssue, useIssueComments, useUpdateIssue, UpdateIssueArgs, useUsers, useLabels } from '../hooks';
 
-import { BLUE, GREEN, ORANGE, PINK, PURPLE, RED, YELLOW, DEFAULT_LABELS } from '../constants';
+import { BLUE, GREEN, ORANGE, PINK, PURPLE, RED, YELLOW } from '../constants';
 
 import IssueDetails from '../components/IssueDetails';
 import IssueDetailsSkeletonLoader from '../components/IssueDetails/IssueDetailsSkeletonLoader';
@@ -153,6 +153,7 @@ interface IssueProps {
     comments?: IComment[];
     users?: IUser[];
     userIDToUser: UserIDToUser;
+    labels?: ILabel[];
     queryClient: QueryClient;
     updateIssue: (args: UpdateIssueArgs) => void;
   };
@@ -182,6 +183,10 @@ const useIssueProps = () => {
   const commentsQuery = useIssueComments(numberAsNum);
   const comments = commentsQuery.data;
 
+  // fetch labels
+  const labelsQuery = useLabels();
+  const labels = labelsQuery.data;
+
   // fetch all users
   const usersQuery = useUsers();
   const users = usersQuery.data ?? [];
@@ -197,6 +202,7 @@ const useIssueProps = () => {
       comments,
       users,
       userIDToUser,
+      labels,
       queryClient,
       updateIssue: (args: UpdateIssueArgs) => updateIssueMutation.mutate(args),
     },
@@ -215,7 +221,7 @@ const useIssueProps = () => {
 const StatelessIssue = React.memo((props: IssueProps) => {
   const { data, isLoadingIssue, isLoadingComments, isLoadingUsers, issueError, commentsError } = props;
   const isLoading = isLoadingIssue || isLoadingComments || isLoadingUsers;
-  const { number, issue, users, userIDToUser, comments, queryClient, updateIssue } = data;
+  const { number, issue, users, userIDToUser, labels, comments, queryClient, updateIssue } = data;
 
   const issueCreator: IUser | undefined = issue
     ? queryClient.getQueryData(['users', issue.createdBy]) || userIDToUser.get(issue.createdBy)
@@ -314,24 +320,31 @@ const StatelessIssue = React.memo((props: IssueProps) => {
                   </Row>
                 )}
               </UpdateContainer>
-              {/* <UpdateContainer>
+              <UpdateContainer>
                 <Row align="center" justify="space-between" margin="0 0 5px 0">
                   <Title>Labels</Title>
                   <OverlayTrigger
                     overlay={
                       <StyledPopover ariaLabel="Labels Popover">
                         <Column align="flex-start">
-                          {DEFAULT_LABELS.map((label) => (
-                            <PopoverItem
-                              key={label.id}
-                              label={label.id}
-                              isActive={issue.labels.includes(label.id)}
-                              // onClick={() => updateLabel(label.id)}
-                            >
-                              <span />
-                              {label.name}
-                            </PopoverItem>
-                          ))}
+                          {labels &&
+                            labels.map((label) => (
+                              <PopoverItem
+                                key={label.id}
+                                label={label.id}
+                                isActive={issue.labels.includes(label.id)}
+                                onClick={() => {
+                                  const hasLabel = issue.labels.includes(label.id);
+                                  const newLabels = hasLabel
+                                    ? issue.labels.filter((l) => l !== label.id)
+                                    : [...issue.labels, label.id];
+                                  updateIssue({ issueId: issue.number, labels: newLabels });
+                                }}
+                              >
+                                <span />
+                                {label.name}
+                              </PopoverItem>
+                            ))}
                         </Column>
                       </StyledPopover>
                     }
@@ -340,13 +353,19 @@ const StatelessIssue = React.memo((props: IssueProps) => {
                   </OverlayTrigger>
                 </Row>
                 <ul>
-                  {issue.labels.map((label) => (
-                    <Badge key={label} label={label} isActive>
+                  {issue.labels.map((label, idx) => (
+                    <Badge
+                      key={label}
+                      label={label}
+                      // HACK BECAUSE IM LAZY AT THIS POINT
+                      margin={`0 10px ${idx === issue.labels.length - 1 ? '0' : '10px'} 0`}
+                      isActive
+                    >
                       {label}
                     </Badge>
                   ))}
                 </ul>
-              </UpdateContainer> */}
+              </UpdateContainer>
             </>
           ) : null}
         </Column>

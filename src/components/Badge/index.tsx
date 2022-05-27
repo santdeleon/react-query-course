@@ -14,6 +14,7 @@ import { RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE, PINK, GRAY } from '../../cons
 interface BadgeProps extends React.HTMLProps<HTMLButtonElement> {
   label: TLabel;
   isActive: boolean;
+  margin?: string;
 }
 
 // =============================================================================
@@ -22,6 +23,7 @@ interface BadgeProps extends React.HTMLProps<HTMLButtonElement> {
 
 const Badge = styled.button<BadgeProps>`
   cursor: ${(props) => (props.onClick ? 'pointer' : 'default')};
+  margin: ${(props) => props.margin};
   user-select: none;
   padding: 2px 6px;
   border: 0;
