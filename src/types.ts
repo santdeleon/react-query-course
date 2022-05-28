@@ -32,7 +32,7 @@ export interface IComment {
   createdBy: string;
   createdDate: Date;
   id: string;
-  issue_id: string;
+  // issue_id: string;
 }
 
 export interface IUser {

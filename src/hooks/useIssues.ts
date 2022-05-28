@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient, useMutation } from 'react-query';
+import { useQuery, useQueryClient, useMutation, useInfiniteQuery } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 
 import { TLabel, TStatus, IIssue, IComment } from '../types';
@@ -118,22 +118,30 @@ export const useIssue = (issueId?: number) => {
 };
 
 // =============================================================================
-// useIssueComments
+// useInfiniteIssueComments
 // =============================================================================
 
-export const fetchIssueComments = async (issueId: number, opts?: RequestInit) => {
-  const data: IComment[] = await fetchWithError(`/api/issues/${issueId}/comments`, opts);
+interface FetchIssueCommentsResponse {
+  pages: IIssue[];
+  pageParam: number[] | undefined[];
+}
+export const fetchIssueComments = async (issueId: number, pageParam = 1, opts?: RequestInit) => {
+  const data: IComment[] = await fetchWithError(`/api/issues/${issueId}/comments?page=${pageParam}`, opts);
   return data;
 };
 
-export const useIssueComments = (issueId?: number) => {
-  return useQuery({
+export const useInfiniteIssueComments = (issueId?: number) => {
+  return useInfiniteQuery({
     queryKey: ['issues', issueId, 'comments'],
     enabled: !!issueId,
-    async queryFn({ signal }) {
+    async queryFn({ signal, pageParam }) {
       if (!issueId) throw new Error('You must provide an issue ID');
-      const issue = await fetchIssueComments(issueId, { signal });
-      return issue;
+      const comments = await fetchIssueComments(issueId, pageParam, { signal });
+      return comments;
+    },
+    getNextPageParam: (lastPage, pages) => {
+      if (Array.isArray(lastPage) && lastPage.length === 0) return;
+      return pages.length + 1;
     },
   });
 };

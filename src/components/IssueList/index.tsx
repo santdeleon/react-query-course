@@ -50,8 +50,8 @@ const IssueList = React.memo((props: IssueListProps) => {
         const createdBy = userIDToUser.get(issue.createdBy);
 
         const prefetchIssueComments = async () => {
-          await queryClient.prefetchQuery(['issues', issue.number, 'comments'], async () => {
-            return fetchIssueComments(issue.number);
+          await queryClient.prefetchInfiniteQuery(['issues', issue.number, 'comments'], async () => {
+            return fetchIssueComments(issue.number, 1);
           });
         };
 

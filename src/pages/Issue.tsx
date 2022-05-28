@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { QueryClient, useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
@@ -7,7 +7,15 @@ import { relativeDate, hexToRGB } from '../utils';
 
 import { IComment, IIssue, IUser, TLabel, ILabel, TStatus } from '../types';
 
-import { useIssue, useIssueComments, useUpdateIssue, UpdateIssueArgs, useUsers, useLabels } from '../hooks';
+import {
+  useIssue,
+  useInfiniteIssueComments,
+  useUpdateIssue,
+  UpdateIssueArgs,
+  useUsers,
+  useLabels,
+  useScrollToBottomAction,
+} from '../hooks';
 
 import { BLUE, GREEN, ORANGE, PINK, PURPLE, RED, YELLOW } from '../constants';
 
@@ -160,6 +168,7 @@ interface IssueProps {
   isLoadingIssue: boolean;
   isLoadingComments: boolean;
   isLoadingUsers: boolean;
+  isFetchingNextPage: boolean;
   issueError: unknown;
   commentsError: unknown;
 }
@@ -180,8 +189,8 @@ const useIssueProps = () => {
   const issue = issueQuery.data;
 
   // fetch issue comments
-  const commentsQuery = useIssueComments(numberAsNum);
-  const comments = commentsQuery.data;
+  const commentsQuery = useInfiniteIssueComments(numberAsNum);
+  const comments = commentsQuery.data?.pages !== undefined ? (commentsQuery.data?.pages.flat() as IComment[]) : [];
 
   // fetch labels
   const labelsQuery = useLabels();
@@ -194,6 +203,8 @@ const useIssueProps = () => {
 
   // mutations
   const updateIssueMutation = useUpdateIssue();
+
+  useScrollToBottomAction(document, commentsQuery.fetchNextPage, 100);
 
   return {
     data: {
@@ -209,6 +220,7 @@ const useIssueProps = () => {
     isLoadingIssue: issueQuery.isLoading,
     isLoadingComments: commentsQuery.isLoading,
     isLoadingUsers: usersQuery.isLoading,
+    isFetchingNextPage: commentsQuery.isFetchingNextPage,
     issueError: issueQuery.error,
     commentsError: commentsQuery.error,
   };
@@ -219,7 +231,8 @@ const useIssueProps = () => {
 // =============================================================================
 
 const StatelessIssue = React.memo((props: IssueProps) => {
-  const { data, isLoadingIssue, isLoadingComments, isLoadingUsers, issueError, commentsError } = props;
+  const { data, isLoadingIssue, isLoadingComments, isLoadingUsers, isFetchingNextPage, issueError, commentsError } =
+    props;
   const isLoading = isLoadingIssue || isLoadingComments || isLoadingUsers;
   const { number, issue, users, userIDToUser, labels, comments, queryClient, updateIssue } = data;
 
@@ -270,7 +283,13 @@ const StatelessIssue = React.memo((props: IssueProps) => {
           ) : (
             <div>No comments...</div>
           )}
+          {isFetchingNextPage && (
+            <div style={{ marginTop: '10px' }}>
+              <Spinner />
+            </div>
+          )}
         </Column>
+
         <Column>
           {isLoading ? null : issue ? (
             <>
