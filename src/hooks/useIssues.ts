@@ -122,11 +122,15 @@ export const useIssue = (issueId?: number) => {
 // =============================================================================
 
 interface FetchIssueCommentsResponse {
-  pages: IIssue[];
+  pages: IComment[];
   pageParam: number[] | undefined[];
 }
+
 export const fetchIssueComments = async (issueId: number, pageParam = 1, opts?: RequestInit) => {
-  const data: IComment[] = await fetchWithError(`/api/issues/${issueId}/comments?page=${pageParam}`, opts);
+  const data: FetchIssueCommentsResponse = await fetchWithError(
+    `/api/issues/${issueId}/comments?page=${pageParam}`,
+    opts,
+  );
   return data;
 };
 
